@@ -531,7 +531,7 @@ function bind(){$("#b-nav").onclick=()=>{S.navOff=!S.navOff;localStorage.setItem
   const c=e.target.closest("[data-done]");if(c)return toggleDone(c.dataset.done);const o=e.target.closest("[data-open]");if(o){select(o.dataset.open);openTask(o.dataset.open)}};
  $("#ov").onpointerdown=e=>{if(e.target.id==="ov")closeModal()};$("#ov2").onpointerdown=e=>{if(e.target.id==="ov2")closeM2()};
  document.addEventListener("pointerdown",e=>{if(!e.target.closest("#menu,#b-more"))closeMenu()},true);
- document.addEventListener("keydown",e=>{const k=e.key.toLowerCase(),mod=e.ctrlKey||e.metaKey;
+ document.addEventListener("keydown",e=>{if(typeof e.key!=="string")return;const k=e.key.toLowerCase(),mod=e.ctrlKey||e.metaKey;
   if(k==="escape"){if($("#menu").style.display==="block")return closeMenu();if($("#ov2").classList.contains("show"))return closeM2();if($("#ov").classList.contains("show"))return closeModal();return}
   if(e.target.closest("input,textarea,select")||$("#ov2").classList.contains("show"))return;
   if($("#ov").classList.contains("show")){if(mod&&k==="c"&&MD&&!MD.isNew&&!getSelection().toString()){e.preventDefault();copyTask(MD.d.id)}return}
