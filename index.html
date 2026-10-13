@@ -158,29 +158,45 @@ textarea{resize:vertical;min-height:56px}.prg{display:flex;gap:10px}.prg input[t
 /*v4*/.top .prof{color:#25242c}.prof span:not(.av){justify-content:center;align-self:center}.prof small{margin-top:1px}.calw.mv .cb{height:16px;margin:0 2px 1px;padding:0 5px;font-size:10.5px;border-radius:4px;gap:4px}.calw.mv .cb small{display:none}.calw.mv .cb .hd{width:6px}.calw.mv .dc{padding:3px 6px}.calw.mv .dn{font-size:11px}.calw.mv .dc.today .dn span{width:20px;height:20px;min-width:20px}
 /*v4b*/.kq{display:flex;flex-direction:column;gap:5px}.kq-i{display:grid;grid-template-columns:30px minmax(0,1fr) 100px;gap:8px;align-items:center}.kq-n{font-weight:800;color:var(--pr)}.kq-l{font-size:12px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kq-i input{width:100%!important}.kq-f{display:flex;gap:6px;align-items:center}.kq-f span{font-weight:800;color:var(--pr)}.kq-calc{font-size:12px;color:#555;margin-top:5px;font-family:Consolas,monospace}.kq-calc b{color:var(--pr)}.kq-ql{font-size:12px;color:#777;white-space:pre-wrap;background:#fafafa;border-radius:8px;padding:8px;max-height:120px;overflow:auto}
 /*v5*/.kf{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-family:Consolas,monospace;font-size:13px;background:#f7f6fb;border:1px solid #ecebf5;border-radius:10px;padding:10px 12px}.kf input{width:72px!important;padding:5px 6px!important;text-align:right;font-family:inherit}.kf-t{font-weight:800;color:var(--pr);margin-left:2px}.kf-o{color:#555;white-space:pre}.kf-r{margin-left:6px}.kf-r b{color:var(--pr);font-size:15px}.kf-leg{font-size:11.5px;color:#888;margin-top:5px;line-height:1.5}#g-grd .grd{min-width:34px;height:28px;font-size:15px;border-radius:8px}
+/*profile logout*/.pf-logout-wrap{margin-top:16px;padding-top:12px;border-top:1px solid var(--ln)}.pf-logout{display:block;width:100%;padding:11px 14px;border:1px solid #eed4d4;border-radius:9px;background:#fff8f8;color:#bb3d3d;font-weight:700;text-align:center;transition:background .15s}.pf-logout:hover{background:#fcecec}
 /*v6*/.wkb{display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:13px;background:#ffffff2e;border:1px solid #ffffff55;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;margin-left:8px}
+/* Password login */
+#lg-password,#lg-newpass input{padding:11px 12px;border:1px solid var(--ln);border-radius:8px;outline-color:var(--pr)}
+#lg-reset{color:var(--pr);border:0;background:transparent}
+/* Draggable 1/2/3-week/month view selector */
+.zoom-slider{position:relative;isolation:isolate;touch-action:none;user-select:none;padding:3px;border-radius:11px;min-width:172px}
+.zoom-slider::before{content:"";position:absolute;z-index:-1;top:3px;bottom:3px;left:calc(3px + (100% - 6px)*var(--zoom-i,0)/4);width:calc((100% - 6px)/4);border-radius:8px;background:#fff;box-shadow:0 1px 5px #17214a30;transition:left .18s ease}
+.zoom-slider.sliding::before{transition:none}
+.zoom-slider button{position:relative;z-index:1;flex:1;min-width:38px;padding:6px 10px;border-radius:8px;background:transparent!important;box-shadow:none!important;touch-action:none}
+.zoom-slider button.on{color:#30248b!important}
+.zoom-slider button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
 </style></head><body>
 <div class="app">
 <header class="top"><button class="ic" id="b-nav" title="메뉴 접기/펼치기">☰</button><div class="brand">성과관리 대시보드</div>
 <button class="btn" id="b-today">Today</button><button class="ic" id="b-prev">‹</button><button class="ic" id="b-next">›</button><div class="rng" id="rng"></div><span class="wkb" id="wkb"></span><div class="sp"></div>
 <div class="seg tabs" id="seg-tab"><button data-v="cal">📅 업무관리</button><button data-v="goal">🎯 목표관리</button></div>
-<div class="seg" id="seg-zoom"><button data-v="week">1주</button><button data-v="2w">2주</button><button data-v="month">월</button></div>
+<div class="seg zoom-slider" id="seg-zoom" role="group" aria-label="캘린더 표시 기간"><button data-v="week">1주</button><button data-v="2w">2주</button><button data-v="3w">3주</button><button data-v="month">월</button></div>
 <button class="ic bell" id="b-noti" title="수정 알림">🔔<i class="bdg" id="noti-n"></i></button><div class="notp" id="notp"></div>
 <button class="prof" id="b-prof" title="내 프로필"></button><input type="file" id="f-import" accept=".csv" hidden></header>
 <div class="body" id="bodyg"><nav class="nav" id="nav"><div class="mini" id="mini"></div><div id="navl"></div><div class="nav-q"><input class="search" id="q" placeholder="🔍 업무 검색"></div></nav><main class="main" id="main"><div style="margin:40px auto;max-width:560px;padding:20px 24px;border:1px solid #f0c36d;background:#fff8e1;border-radius:12px;line-height:1.8"><b>⏳ 화면을 불러오는 중…</b><br>이 문구가 계속 보이면 스크립트가 실행되지 않은 것입니다.<br>① 메모장 맨 아래가 <b>END</b> 줄인지 확인 (코드 전체 복사)<br>② 바탕화면에 저장한 파일을 <b>Chrome 또는 Edge</b>로 열기<br>&nbsp;&nbsp;&nbsp;(OneDrive·Teams·메일 미리보기에서 열면 스크립트가 차단됩니다)<br>③ 다른 이름으로 저장 시 인코딩 <b>UTF-8</b></div></main><aside class="side"><div class="acc" id="acc"></div><div class="box" id="wkst"></div><div class="box" id="absbox"></div></aside></div></div>
 <div class="ov" id="ov"><div class="modal" id="modal"></div></div><div class="ov" id="ov2"><div class="modal" id="modal2"></div></div>
 <div class="menu" id="menu"></div><div class="toast" id="toast"></div><div class="tip" id="tip"></div>
-<div class="login" id="login"><div class="card"><div class="lg-logo-w"><img id="lg-logo" alt="">성과관리 대시보드</div><p style="margin:0;color:#777" id="lg-msg">사번으로 로그인하세요.</p>
-<div class="lg-in"><input id="lg-id" placeholder="사번" autocomplete="username"><span>@donga.co.kr</span></div><button class="btn pr" id="lg-btn">로그인</button><button class="btn sm" id="lg-ms">Microsoft 계정으로 로그인</button></div></div>
+<div class="login" id="login"><div class="card"><div class="lg-logo-w"><img id="lg-logo" alt="">성과관리 대시보드</div><p style="margin:0;color:#777" id="lg-msg">사번과 비밀번호로 로그인하세요.</p>
+<div class="lg-in"><input id="lg-id" placeholder="사번 또는 회사 이메일" autocomplete="username"><span>@donga.co.kr</span></div>
+<input id="lg-password" type="password" placeholder="비밀번호" autocomplete="current-password" minlength="8" style="width:100%">
+<button class="btn pr" id="lg-btn">비밀번호로 로그인</button>
+<button class="btn sm" type="button" id="lg-reset">비밀번호를 잊으셨나요?</button>
+<button class="btn sm" id="lg-ms" type="button">Microsoft 계정으로 로그인</button>
+<div id="lg-newpass" style="display:none;gap:9px"><p style="margin:4px 0;color:#555">이메일의 재설정 링크로 들어왔습니다. 새 비밀번호를 입력하세요.</p><input id="lg-np1" type="password" autocomplete="new-password" placeholder="새 비밀번호 (8자 이상)"><input id="lg-np2" type="password" autocomplete="new-password" placeholder="새 비밀번호 확인"><button class="btn pr" id="lg-savepass" type="button">새 비밀번호 저장</button></div></div></div>
 <script>
 // ▼ Supabase 연결 정보 (Supabase → Project Settings → API) · 비워두면 데모 모드(이 브라우저에만 저장)
-const CONFIG={SUPABASE_URL:"",SUPABASE_ANON_KEY:""}; // 예) SUPABASE_URL:"https://abcd1234.supabase.co"
+const CONFIG={SUPABASE_URL:"",SUPABASE_ANON_KEY:""}; // Supabase Project URL과 publishable/anon key 입력 · service_role 키 절대 금지. 예) SUPABASE_URL:"https://abcd1234.supabase.co"
 // ▼ 공휴일 (회사 휴무일도 같은 형식으로 추가)
 const HOL={"2025-01-01":"신정","2025-01-27":"임시공휴일","2025-01-28":"설날","2025-01-29":"설날","2025-01-30":"설날","2025-03-01":"삼일절","2025-03-03":"대체공휴일","2025-05-05":"어린이날·부처님오신날","2025-05-06":"대체공휴일","2025-06-03":"대통령선거","2025-06-06":"현충일","2025-08-15":"광복절","2025-10-03":"개천절","2025-10-05":"추석","2025-10-06":"추석","2025-10-07":"추석","2025-10-08":"대체공휴일","2025-10-09":"한글날","2025-12-25":"성탄절",
 "2026-01-01":"신정","2026-02-16":"설날","2026-02-17":"설날","2026-02-18":"설날","2026-03-01":"삼일절","2026-03-02":"대체공휴일","2026-05-05":"어린이날","2026-05-24":"부처님오신날","2026-05-25":"대체공휴일","2026-06-03":"지방선거","2026-06-06":"현충일","2026-08-15":"광복절","2026-08-17":"대체공휴일","2026-09-24":"추석","2026-09-25":"추석","2026-09-26":"추석","2026-10-03":"개천절","2026-10-05":"대체공휴일","2026-10-09":"한글날","2026-12-25":"성탄절",
 "2027-01-01":"신정","2027-02-06":"설날","2027-02-07":"설날","2027-02-08":"설날","2027-02-09":"대체공휴일","2027-03-01":"삼일절","2027-05-05":"어린이날","2027-05-13":"부처님오신날","2027-06-06":"현충일","2027-08-15":"광복절","2027-08-16":"대체공휴일","2027-09-14":"추석","2027-09-15":"추석","2027-09-16":"추석","2027-10-03":"개천절","2027-10-04":"대체공휴일","2027-10-09":"한글날","2027-10-11":"대체공휴일","2027-12-25":"성탄절","2027-12-27":"대체공휴일"};
 const PAL=["#2ECC87","#45B0F5","#B388E0","#FF7B6E","#FFBF24","#40C4C4","#F06292","#9A847C","#E84040","#222222"],OLDPAL=["#3B45C4","#0F7B5F","#B4442F","#7240B8","#9A6400","#1C7088","#C2185B","#2E7D32"],STS=["예정","진행중","의사결정필요","지연","보류","완료"],DN=["월","화","수","목","금","토","일"];
-const GZ={week:{p:110,days:7,pre:0},"2w":{p:60,days:14,pre:0},month:{p:30,days:42,pre:7}};
+const GZ={week:{p:110,days:7,pre:0},"2w":{p:60,days:14,pre:0},"3w":{p:43,days:21,pre:0},month:{p:30,days:42,pre:7}};
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>(window.crypto&&crypto.randomUUID)?crypto.randomUUID():"x"+Date.now().toString(36)+Math.random().toString(36).slice(2);
@@ -296,10 +312,10 @@ function openEvList(c){const y=ymd(S.cursor).y,rows=c==="공휴일"?Object.entri
  <div class="mb">${rows.map(r=>`<div class="pi" ${r.id?`data-eid="${r.id}"`:""}><div class="r"><b>${esc(r.title)}</b><span class="sp"></span><small>${mdw(D(r.date))}</small></div></div>`).join("")||'<div class="empty">등록된 일정이 없습니다</div>'}</div>`;
  $("#ov2").classList.add("show");$("#x2").onclick=closeM2;if($("#el-add"))$("#el-add").onclick=()=>openEv(null,null,c);
  $("#modal2 .mb").onclick=e=>{const r=e.target.closest("[data-eid]");if(r)openEv(r.dataset.eid)}}
-function calRange(){const w=mon(S.cursor);if(S.view==="week")return[w,1];if(S.view==="2w")return[w,2];const x=ymd(S.cursor),a=mon(U(x.y,x.m,1)),l=U(x.y,x.m+1,0);return[a,Math.ceil((l-a+1)/7)]}
+function calRange(){const w=mon(S.cursor);if(S.view==="week")return[w,1];if(S.view==="2w")return[w,2];if(S.view==="3w")return[w,3];const x=ymd(S.cursor),a=mon(U(x.y,x.m,1)),l=U(x.y,x.m+1,0);return[a,Math.ceil((l-a+1)/7)]}
 const gStart=()=>mon(S.cursor)-GZ[S.view].pre;
 function renderTop(){let t;if(S.view==="month"&&S.mode==="cal"){const x=ymd(S.cursor);t=`${x.y}년 ${x.m}월`}else{const a=S.mode==="cal"?calRange()[0]:gStart(),b=a+(S.mode==="cal"?calRange()[1]*7-2:GZ[S.view].days)-1,A=ymd(a),B=ymd(b);t=`${A.y}년 ${A.m}월 ${A.d}일 – ${B.m}월 ${B.d}일`}
- $("#rng").textContent=t;$$("#seg-mode button").forEach(x=>x.classList.toggle("on",x.dataset.v===S.mode));$$("#seg-zoom button").forEach(x=>x.classList.toggle("on",x.dataset.v===S.view))}
+ $("#rng").textContent=t;$$("#seg-mode button").forEach(x=>x.classList.toggle("on",x.dataset.v===S.mode));$$("#seg-zoom button").forEach(x=>x.classList.toggle("on",x.dataset.v===S.view));$("#seg-zoom").style.setProperty("--zoom-i",Math.max(0,["week","2w","3w","month"].indexOf(S.view)))}
 function renderMain(){const legend=allM().map(m=>`<span class="lg ${S.hidden.has(m.id)?"off":""}"><input type="checkbox" data-vis="${m.id}" ${S.hidden.has(m.id)?"":"checked"} style="accent-color:${m.color}" title="캘린더 표시"><button data-p="${m.id}" title="${esc(m.name)}님 전체 업무 보기"><span class="dot" style="background:${m.color}"></span>${esc(m.name)}</button></span>`).join("");
  const w=mon(S.cursor),wn=Math.ceil((ymd(w+3).d)/7),x=ymd(w+3);
  $("#main").innerHTML=`<div class="cbar"><b>${S.mode==="cal"?(S.view==="week"?`${x.m}월 ${wn}주차`:"팀 캘린더"):"간트 차트"}</b></div><div id="view" style="flex:1;min-height:0;display:flex;flex-direction:column"></div>`;
@@ -491,10 +507,19 @@ async function importCSV(file){const buf=await file.arrayBuffer();let s=new Text
 // ── 공통 ──
 let tT;function toast(m,err){const t=$("#toast");t.textContent=m;t.className="toast show"+(err?" err":"");clearTimeout(tT);tT=setTimeout(()=>t.className="toast",2600)}
 function tip(e,s){const t=$("#tip");t.textContent=s;t.style.display="block";t.style.left=e.clientX+12+"px";t.style.top=e.clientY-28+"px"}const hideTip=()=>$("#tip").style.display="none";
-function bind(){$("#b-nav").onclick=()=>{S.navOff=!S.navOff;localStorage.setItem("tb-nav",S.navOff?"1":"0");renderNav()};const mv=dir=>{if(S.mode==="cal"&&S.view==="month"){const x=ymd(S.cursor);S.cursor=U(x.y,x.m+dir,1)}else S.cursor+=dir*(S.view==="week"?7:S.view==="2w"?14:28);S.miniM=null;render()};
+function bind(){$("#b-nav").onclick=()=>{S.navOff=!S.navOff;localStorage.setItem("tb-nav",S.navOff?"1":"0");renderNav()};const mv=dir=>{if(S.mode==="cal"&&S.view==="month"){const x=ymd(S.cursor);S.cursor=U(x.y,x.m+dir,1)}else S.cursor+=dir*(S.view==="week"?7:S.view==="2w"?14:S.view==="3w"?21:28);S.miniM=null;render()};
  $("#b-today").onclick=()=>{S.cursor=S.agDay=TODAY;S.miniM=null;render()};$("#b-prev").onclick=()=>mv(-1);$("#b-next").onclick=()=>mv(1);
  $("#seg-tab").onclick=e=>{const b=e.target.closest("button");if(b){S.mode=b.dataset.v;localStorage.setItem("tb-mode",S.mode);render()}};
- $("#seg-zoom").onclick=e=>{const b=e.target.closest("button");if(b){S.view=b.dataset.v;localStorage.setItem("tb-view",S.view);render()}};
+ const zoom=$("#seg-zoom"), zButtons=[...zoom.querySelectorAll("button")];
+ const setZoom=v=>{if(!GZ[v])return;S.view=v;localStorage.setItem("tb-view",v);render()};
+ const zoomIndex=x=>Math.max(0,Math.min(zButtons.length-1,Math.floor((x-zoom.getBoundingClientRect().left)/zoom.getBoundingClientRect().width*zButtons.length)));
+ let zDrag=null;
+ zoom.addEventListener("pointerdown",e=>{if(e.button!==0)return;zDrag={id:e.pointerId,x:e.clientX};zoom.setPointerCapture(e.pointerId);zoom.classList.add("sliding");zoom.style.setProperty("--zoom-i",zoomIndex(e.clientX));});
+ zoom.addEventListener("pointermove",e=>{if(zDrag&&zDrag.id===e.pointerId)zoom.style.setProperty("--zoom-i",zoomIndex(e.clientX));});
+ zoom.addEventListener("pointerup",e=>{if(!zDrag||zDrag.id!==e.pointerId)return;const idx=zoomIndex(e.clientX);zDrag=null;zoom.classList.remove("sliding");zoom.releasePointerCapture(e.pointerId);setZoom(zButtons[idx].dataset.v);});
+ zoom.addEventListener("pointercancel",()=>{zDrag=null;zoom.classList.remove("sliding");renderTop()});
+ zoom.onclick=e=>{if(e.detail!==0)return;const b=e.target.closest("button");if(b)setZoom(b.dataset.v)};
+ 
  $("#q").oninput=e=>{S.q=e.target.value;renderMain()};
  const _oldMore=e=>{e.stopPropagation();const r=e.currentTarget.getBoundingClientRect();menu({clientX:r.right-210,clientY:r.bottom+4},[Store.demo?"🧪 데모 모드 · 이 브라우저에만 저장":"☁️ "+esc(S.user||""),
   ["❓ 사용법 · 단축키","",0,help],["👥 팀원 관리","",0,()=>openMembers()],["📥 엑셀 CSV 가져오기","",0,()=>$("#f-import").click()],["💾 백업(JSON) 내보내기","",0,()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({members:S.members,tasks:S.tasks,logs:S.logs,agenda:S.agenda,abs:S.abs,events:S.events},null,1)],{type:"application/json"}));a.download=`team-board-${ISO(TODAY)}.json`;a.click()}],
@@ -656,7 +681,7 @@ function openGoal(id,mid){const g=id?(S.goals||[]).find(x=>x.id===id):null;if(id
   if(!d.title)return toast("개인 목표를 입력하세요",1);S.goals=S.goals||[];const i=S.goals.findIndex(x=>x.id===d.id);i>=0?S.goals[i]=d:S.goals.push(d);closeM2();render();await Store.put("goals",d);toast("목표를 저장했습니다")};
  if(g)$("#g-del").onclick=async()=>{if(!confirm("이 목표를 삭제할까요?"))return;S.goals=S.goals.filter(x=>x.id!==d.id);closeM2();render();await Store.del("goals",d.id)}}
 const _rM=renderMain;renderMain=function(){if(S.mode==="goal")return renderGoal();_rM()};
-const _rT=renderTop;renderTop=function(){_rT();const g=S.mode==="goal";document.body.classList.toggle("goal-mode",g);$$("#seg-tab button").forEach(x=>x.classList.toggle("on",x.dataset.v===(g?"goal":"cal")));renderProf();if(g)$("#rng").textContent=S.gp+" 목표";const wb=$("#wkb");if(wb){const w=mon(S.cursor),th=ymd(w+3),n=Math.ceil(th.d/7),two=S.view==="2w"?ymd(w+10):null,t2=two?`${two.m!==th.m?two.m+"월 ":""}${Math.ceil(two.d/7)}주차`:"";const show=!g&&S.view!=="month";wb.textContent=show?`${th.m}월 ${n}주차${t2?" ~ "+t2:""}`:"";wb.style.display=show?"":"none"}};
+const _rT=renderTop;renderTop=function(){_rT();const g=S.mode==="goal";document.body.classList.toggle("goal-mode",g);$$("#seg-tab button").forEach(x=>x.classList.toggle("on",x.dataset.v===(g?"goal":"cal")));renderProf();if(g)$("#rng").textContent=S.gp+" 목표";const wb=$("#wkb");if(wb){const w=mon(S.cursor),th=ymd(w+3),n=Math.ceil(th.d/7),two=S.view==="2w"?ymd(w+10):S.view==="3w"?ymd(w+17):null,t2=two?`${two.m!==th.m?two.m+"월 ":""}${Math.ceil(two.d/7)}주차`:"";const show=!g&&S.view!=="month";wb.textContent=show?`${th.m}월 ${n}주차${t2?" ~ "+t2:""}`:"";wb.style.display=show?"":"none"}};
 EVI["회의"]="🗣";EVCOL["회의"]="#5B4BC4";
 const MEMB=[["최영무","h2051677","수석","팀장","member",0],["허영민","h2121983","책임","팀원","leader"],["강윤희","h2214916","선임","팀원","member"],["박범주","h2251582","책임","팀원","member"],["최승고","h2141919","책임","팀원","member"],["유혜인","h2222119","선임","팀원","member"],["문경태","h2260129","선임","담당자","leader"]];
 function syncMembers(){let ch=0;MEMB.forEach(x=>{let m=S.members.find(m=>m.name===x[0]);const em=x[1]+"@donga.co.kr";
@@ -672,12 +697,13 @@ function resizeImg(f,S2){return new Promise((ok,no)=>{const r=new FileReader();r
 function openProfile(){const m=member(meId());if(!m)return;const adm=isLeader();let ph=m.photo||"",col=m.color;
  $("#modal2").innerHTML=`<div class="mh pc" style="--c:${m.color}"><div class="r1"><b>내 프로필</b><div class="sp"></div><button class="ic" id="x2">✕</button></div><div class="pf-top"><div class="pf-av" id="pf-av">${av(m,72)}</div><div><div class="pf-n">${esc(m.name)} <small>${esc(m.rank||"")} ${esc(m.pos||"")}</small>${adm?'<span class="pf-adm">관리자</span>':""}</div><div class="pf-id">${esc(m.email||"")}</div><label class="btn sm pf-up">📷 사진 변경<input type="file" id="pf-file" accept="image/*" hidden></label><button class="btn sm pf-up" id="pf-del">사진 삭제</button></div></div></div>`+
  `<div class="mb"><div class="fg"><label>이름</label><input id="pf-name" value="${esc(m.name)}" ${adm?"":"disabled"}><label>아이디</label><input value="${esc(m.email||"")}" disabled><label>직급</label><input id="pf-rank" value="${esc(m.rank||"")}" placeholder="예) 책임"><label>팀·파트</label><input id="pf-team" value="${esc(m.team||"")}"><label>생일</label><input type="date" id="pf-bd" value="${esc(bdVal(m.birthday))}"><label>캘린더 색</label><div class="pf-col">${PAL.map(c=>`<button class="pf-c ${c.toUpperCase()===String(m.color).toUpperCase()?"on":""}" data-c="${c}" style="background:${c}"></button>`).join("")}</div></div>`+
- `<div class="pf-menu"><button data-pm="help">❓ 사용법 · 단축키</button>${adm?'<button data-pm="mem">👥 팀원 관리</button><button data-pm="csv">📥 엑셀 CSV 가져오기</button>':""}<button data-pm="bak">💾 백업(JSON) 내보내기</button>${Store.demo?'<button data-pm="reset">↺ 데모 데이터 초기화</button>':""}<button data-pm="out">🚪 로그아웃</button></div></div>`+
+ `<div class="pf-menu"><button data-pm="help">❓ 사용법 · 단축키</button>${adm?'<button data-pm="mem">👥 팀원 관리</button><button data-pm="csv">📥 엑셀 CSV 가져오기</button>':""}<button data-pm="bak">💾 백업(JSON) 내보내기</button>${Store.demo?'<button data-pm="reset">↺ 데모 데이터 초기화</button>':""}</div><div class="pf-logout-wrap"><button class="pf-logout" id="pf-logout" type="button">↪ 로그아웃</button></div></div>`+
  `<div class="mf"><button class="btn" id="pf-x">닫기</button><button class="btn pr" id="pf-ok">저장</button></div>`;
  $("#ov2").classList.add("show");$("#x2").onclick=$("#pf-x").onclick=closeM2;
  $("#modal2 .pf-col").onclick=e=>{const c=e.target.closest("[data-c]");if(!c)return;col=c.dataset.c;$$("#modal2 .pf-c").forEach(x=>x.classList.toggle("on",x===c))};
  $("#pf-file").onchange=e=>{const f=e.target.files[0];if(!f)return;resizeImg(f,120).then(u=>{ph=u;$("#pf-av").innerHTML=av({...m,photo:u},72)}).catch(()=>toast("이미지를 읽을 수 없습니다",1))};
  $("#pf-del").onclick=()=>{ph="";$("#pf-av").innerHTML=av({...m,photo:""},72)};
+ $("#pf-logout").onclick=()=>{if(confirm("로그아웃하시겠습니까?"))Store.logout().catch(e=>toast("로그아웃 실패: "+e.message,1))};
  $("#modal2 .pf-menu").onclick=e=>{const b=e.target.closest("[data-pm]");if(!b)return;const k=b.dataset.pm;
   if(k==="help")return help();if(k==="mem")return openMembers();if(k==="csv"){closeM2();return $("#f-import").click()}
   if(k==="bak"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({members:S.members,tasks:S.tasks,logs:S.logs,agenda:S.agenda,abs:S.abs,events:S.events,goals:S.goals,tgoals:S.tgoals},null,1)],{type:"application/json"}));a.download=`perf-board-${ISO(TODAY)}.json`;a.click();return}
@@ -751,17 +777,29 @@ function renderNoti(){const b=$("#noti-n");if(!b)return;const me=member(meId())?
 function drawNoti(){const p=$("#notp"),seen=p.dataset.seen||"",me=member(meId())?.name;p.innerHTML=`<h4>🔔 수정 기록<button id="noti-x">닫기</button></h4>`+((S.acts||[]).slice(0,60).map(a=>{const m=S.members.find(x=>x.name===a.who);return `<div class="na ${String(a.at)>seen&&a.who!==me?"new":""}">${m?av(m,26):""}<div><b>${esc(a.who||"-")}</b> · ${esc(a.action)}${a.target?` <span style="color:#555">“${esc(a.target)}”</span>`:""}<small>${ago(a.at)}</small></div></div>`}).join("")||'<div class="empty">수정 기록이 없습니다</div>');const x=$("#noti-x");if(x)x.onclick=()=>p.classList.remove("show")}
 function toggleNoti(e){if(e&&e.stopPropagation)e.stopPropagation();const p=$("#notp");if(p.classList.contains("show")){p.classList.remove("show");return}p.dataset.seen=localStorage.getItem("tb-seen")||"";p.classList.add("show");drawNoti();localStorage.setItem("tb-seen",new Date().toISOString());renderNoti()}
 document.addEventListener("pointerdown",e=>{const p=$("#notp");if(p&&p.classList.contains("show")&&!e.target.closest("#notp,#b-noti"))p.classList.remove("show")},true);
-function showLogin(msg,signed){$("#login").classList.add("show");const lg=$("#lg-logo"),bi=document.querySelector(".brand img");if(lg&&bi)lg.src=bi.src;
- if(msg)$("#lg-msg").textContent=msg;const inp=$("#lg-id"),b=$("#lg-btn"),ms=$("#lg-ms");if(ms)ms.style.display=Store.demo?"none":"";
- const go=async()=>{let v=inp.value.trim().toLowerCase();if(!v)return;if(!v.includes("@"))v+="@donga.co.kr";
-  if(Store.demo){if(!S.members.some(m=>String(m.email||"").toLowerCase()===v)){$("#lg-msg").textContent=v+" 은(는) 등록된 팀원 계정이 아닙니다.";return}localStorage.setItem("tb-me",v);location.reload();return}
-  b.disabled=true;const{error}=await Store.sb.auth.signInWithOtp({email:v,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});b.disabled=false;
-  $("#lg-msg").textContent=error?"오류: "+error.message:v+" 메일함에서 로그인 링크를 눌러주세요."};
- b.onclick=go;inp.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)go()};if(ms)ms.onclick=()=>Store.login();
- if(signed&&!Store.demo){const o=document.createElement("button");o.className="btn sm";o.textContent="다른 계정으로 로그인";o.onclick=()=>Store.logout();b.after(o)}
- setTimeout(()=>inp.focus&&inp.focus(),50)}
+function loginEmail(){let v=$("#lg-id").value.trim().toLowerCase();if(v&&!v.includes("@"))v+="@donga.co.kr";return v}
+function showLogin(msg,signed){
+ const panel=$("#login"), info=$("#lg-msg"),inp=$("#lg-id"),pw=$("#lg-password"),btn=$("#lg-btn"),reset=$("#lg-reset"),ms=$("#lg-ms"),np=$("#lg-newpass");
+ panel.classList.add("show");const logo=$("#lg-logo"), brandImg=document.querySelector(".brand img");if(logo&&brandImg)logo.src=brandImg.src;else if(logo)logo.style.display="none";
+ info.textContent=msg||(Store.demo?"Supabase 연결 정보를 설정해야 개인별 비밀번호 로그인을 사용할 수 있습니다.":"등록된 회사 계정의 비밀번호로 로그인하세요.");
+ ms.style.display=Store.demo?"none":"";
+ const recovery=location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery";
+ const showRecovery=()=>{np.style.display="grid";inp.parentElement.style.display="none";pw.style.display="none";btn.style.display="none";reset.style.display="none";ms.style.display="none";info.textContent="새 비밀번호를 설정해주세요."};
+ if(recovery)showRecovery();
+ const busy=(v)=>{btn.disabled=v;reset.disabled=v};
+ const go=async()=>{const email=loginEmail(),password=pw.value;if(!email||!password){info.textContent="사번과 비밀번호를 입력해주세요.";return}if(Store.demo){info.textContent="Supabase 연결 정보가 없어 비밀번호를 확인할 수 없습니다. CONFIG를 설정하세요.";return}
+  busy(true);try{const{error}=await Store.sb.auth.signInWithPassword({email,password});if(error){info.textContent="로그인에 실패했습니다. 이메일·비밀번호 및 Auth 계정 등록 상태를 확인하세요.";return}location.replace(location.pathname+location.search)}catch(e){info.textContent="로그인 오류: "+e.message}finally{busy(false)}};
+ btn.onclick=go;pw.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)go()};inp.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)pw.focus()};
+ reset.onclick=async()=>{const email=loginEmail();if(!email){info.textContent="비밀번호를 재설정할 사번 또는 회사 이메일을 입력하세요.";return}if(Store.demo){info.textContent="Supabase 연결 정보를 먼저 설정해주세요.";return}
+  if(location.protocol==="file:"){info.textContent="비밀번호 재설정 링크를 사용하려면 HTTPS 주소로 앱을 배포해야 합니다.";return}
+  busy(true);try{const redirectTo=location.origin+location.pathname;const{error}=await Store.sb.auth.resetPasswordForEmail(email,{redirectTo});info.textContent=error?"재설정 요청 오류: "+error.message:"계정이 등록되어 있다면 비밀번호 재설정 메일을 보냈습니다. 메일함을 확인하세요."}catch(e){info.textContent="재설정 요청 오류: "+e.message}finally{busy(false)}};
+ $("#lg-savepass").onclick=async()=>{const a=$("#lg-np1").value,b=$("#lg-np2").value;if(a.length<8){info.textContent="비밀번호는 8자 이상 입력해주세요.";return}if(a!==b){info.textContent="비밀번호가 서로 다릅니다.";return}if(Store.demo){info.textContent="Supabase 연결이 필요합니다.";return}
+  const{error}=await Store.sb.auth.updateUser({password:a});if(error){info.textContent="비밀번호 저장 오류: "+error.message;return}info.textContent="비밀번호가 변경되었습니다. 새 비밀번호로 로그인하세요.";await Store.sb.auth.signOut();location.replace(location.pathname)};
+ if(signed&&!Store.demo){let other=$("#lg-other");if(!other){other=document.createElement("button");other.id="lg-other";other.className="btn sm";other.textContent="다른 계정으로 로그인";other.onclick=()=>Store.logout();btn.after(other)}}
+ setTimeout(()=>{if(recovery)$("#lg-np1").focus();else inp.focus()},50)
+}
 (async function boot(){bind();Store.init();
- if(!Store.demo){try{if(!await Store.signIn())return showLogin()}catch(e){return showLogin("로그인 오류: "+e.message)}}else S.user=localStorage.getItem("tb-me")||"";
+ if(!Store.demo){try{if(location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery")return showLogin();if(!await Store.signIn())return showLogin()}catch(e){return showLogin("로그인 오류: "+e.message)}}else return showLogin();
  try{await Store.load()}catch(e){toast("불러오기 실패: "+e.message,1);if(!Store.demo)return showLogin("Supabase 연결 실패: "+e.message+" · CONFIG의 URL·키와 SQL 실행 여부를 확인하세요",1)}
  if(!S.members.some(m=>m.email&&String(m.email).toLowerCase()===String(S.user).toLowerCase()))return showLogin(S.user?S.user+" 계정은 팀원으로 등록되지 않았습니다.":"",!!S.user);
  render();
