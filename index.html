@@ -190,7 +190,7 @@ textarea{resize:vertical;min-height:56px}.prg{display:flex;gap:10px}.prg input[t
 <div id="lg-newpass" style="display:none;gap:9px"><p style="margin:4px 0;color:#555">이메일의 재설정 링크로 들어왔습니다. 새 비밀번호를 입력하세요.</p><input id="lg-np1" type="password" autocomplete="new-password" placeholder="새 비밀번호 (8자 이상)"><input id="lg-np2" type="password" autocomplete="new-password" placeholder="새 비밀번호 확인"><button class="btn pr" id="lg-savepass" type="button">새 비밀번호 저장</button></div></div></div>
 <script>
 // ▼ Supabase 연결 정보 (Supabase → Project Settings → API) · 비워두면 데모 모드(이 브라우저에만 저장)
-const CONFIG={SUPABASE_URL:"",SUPABASE_ANON_KEY:""}; // Supabase Project URL과 publishable/anon key 입력 · service_role 키 절대 금지. 예) SUPABASE_URL:"https://abcd1234.supabase.co"
+const CONFIG={SUPABASE_URL:"https://vnazacyfnhrddoghvdew.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_-I_8zKzA6OUZTeNcPs9IjA_HEW-FZ5v"}; // Supabase Project URL과 publishable/anon key 입력 · service_role 키 절대 금지. 예) SUPABASE_URL:"https://abcd1234.supabase.co"
 // ▼ 공휴일 (회사 휴무일도 같은 형식으로 추가)
 const HOL={"2025-01-01":"신정","2025-01-27":"임시공휴일","2025-01-28":"설날","2025-01-29":"설날","2025-01-30":"설날","2025-03-01":"삼일절","2025-03-03":"대체공휴일","2025-05-05":"어린이날·부처님오신날","2025-05-06":"대체공휴일","2025-06-03":"대통령선거","2025-06-06":"현충일","2025-08-15":"광복절","2025-10-03":"개천절","2025-10-05":"추석","2025-10-06":"추석","2025-10-07":"추석","2025-10-08":"대체공휴일","2025-10-09":"한글날","2025-12-25":"성탄절",
 "2026-01-01":"신정","2026-02-16":"설날","2026-02-17":"설날","2026-02-18":"설날","2026-03-01":"삼일절","2026-03-02":"대체공휴일","2026-05-05":"어린이날","2026-05-24":"부처님오신날","2026-05-25":"대체공휴일","2026-06-03":"지방선거","2026-06-06":"현충일","2026-08-15":"광복절","2026-08-17":"대체공휴일","2026-09-24":"추석","2026-09-25":"추석","2026-09-26":"추석","2026-10-03":"개천절","2026-10-05":"대체공휴일","2026-10-09":"한글날","2026-12-25":"성탄절",
@@ -788,7 +788,10 @@ function showLogin(msg,signed){
  if(recovery)showRecovery();
  const busy=(v)=>{btn.disabled=v;reset.disabled=v};
  const go=async()=>{const email=loginEmail(),password=pw.value;if(!email||!password){info.textContent="사번과 비밀번호를 입력해주세요.";return}if(Store.demo){info.textContent="Supabase 연결 정보가 없어 비밀번호를 확인할 수 없습니다. CONFIG를 설정하세요.";return}
-  busy(true);try{const{error}=await Store.sb.auth.signInWithPassword({email,password});if(error){info.textContent="로그인에 실패했습니다. 이메일·비밀번호 및 Auth 계정 등록 상태를 확인하세요.";return}location.replace(location.pathname+location.search)}catch(e){info.textContent="로그인 오류: "+e.message}finally{busy(false)}};
+  busy(true);try{const{error}=await Store.sb.auth.signInWithPassword({email,password});if(error){info.textContent="로그인에 실패했습니다. 개인 비밀번호 설정 및 이메일 인증 상태를 확인하세요.";return}
+  const {data:matching,error:matchErr}=await Store.sb.from("members").select("id,name").eq("email",email).limit(1);
+  if(matchErr||!matching?.length){await Store.sb.auth.signOut();info.textContent="인증은 완료됐지만 members 테이블에 이 이메일로 등록된 직원 정보가 없습니다. 관리자에게 직원 이메일 등록을 요청하세요.";return}
+  location.replace(location.pathname+location.search)}catch(e){info.textContent="로그인 오류: "+e.message}finally{busy(false)}};
  btn.onclick=go;pw.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)go()};inp.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)pw.focus()};
  reset.onclick=async()=>{const email=loginEmail();if(!email){info.textContent="비밀번호를 재설정할 사번 또는 회사 이메일을 입력하세요.";return}if(Store.demo){info.textContent="Supabase 연결 정보를 먼저 설정해주세요.";return}
   if(location.protocol==="file:"){info.textContent="비밀번호 재설정 링크를 사용하려면 HTTPS 주소로 앱을 배포해야 합니다.";return}
