@@ -881,8 +881,8 @@ border-color:color-mix(in srgb,var(--tc) 60%,white)!important;color:var(--safe-i
 .work-editor-help{font-size:11px;color:#9691a3;margin:5px 0 9px}
 .work-partners{display:flex;gap:7px;flex-wrap:wrap}
 .work-partner{display:inline-flex;align-items:center;gap:6px;border:1px solid #e2dfee;border-radius:999px;padding:8px 11px;background:#fff;font-size:12px;cursor:pointer}
-.work-partner:has(input:checked){border-color:#6c51c4;background:#f1edff;color:#51399b}
-.work-partner input{accent-color:#6c51c4}
+.work-partner[aria-pressed="true"]{border-color:#6c51c4;background:#6c51c4;color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(108,81,196,.19)}
+.work-partner{font-family:inherit;transition:background .16s,border-color .16s,color .16s,transform .16s} .work-partner:focus-visible{outline:2px solid #6c51c4;outline-offset:2px}
 .partner-color{width:9px;height:9px;border-radius:50%}
 .partner-quick{display:inline-grid;place-items:center;width:21px;height:21px;background:#efebff;border-radius:50%;color:#6248b8;font-size:17px;line-height:1;vertical-align:middle}
 .calw .cb{overflow:hidden;display:flex;align-items:center}
@@ -990,8 +990,8 @@ border-color:color-mix(in srgb,var(--tc) 60%,white)!important;color:var(--safe-i
 .task-partner-heading span{font-size:11px;color:#938ca5}
 .task-partners{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
 .task-partner-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid #e3dfed;border-radius:999px;background:#fff;cursor:pointer;font-size:12px;color:#504862;min-width:0;user-select:none}
-.task-partner-chip:has(input:checked){background:#f1edff;border-color:#7257c9;color:#5239a2;font-weight:700}
-.task-partner-chip input{width:14px;height:14px;margin:0;accent-color:#684fc1;flex:none}
+.task-partner-chip[aria-pressed="true"]{background:#6c51c4;border-color:#6c51c4;color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(108,81,196,.19)}
+.task-partner-chip{font-family:inherit;transition:background .16s,border-color .16s,color .16s,transform .16s} .task-partner-chip:focus-visible{outline:2px solid #6c51c4;outline-offset:2px}
 .task-partner-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .task-readonly-partners{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .task-readonly-member{display:inline-flex;gap:5px;align-items:center;font-size:12px;color:#595368}
@@ -1210,6 +1210,9 @@ function openProjectTodos(id){
 const isFeedbackLeader=()=>{const m=member(meId());return !!m&&(m.name==='최영무')&&(m.role==='leader'||m.pos==='팀장')};
 const feedbackHTML=(value,id,disabled=false)=>`<div class="leader-feedback-field"><div class="leader-feedback-heading"><b>팀장님 피드백</b><small>${isFeedbackLeader()?'작성 가능':'팀장만 작성 가능'}</small></div><textarea id="${id}" ${disabled?'readonly':''} placeholder="${disabled?'등록된 피드백이 없습니다':'팀장님 피드백을 입력합니다'}">${esc(value||'')}</textarea></div>`;
 async function saveLeaderFeedback(table,id,value){if(!isFeedbackLeader())return toast('팀장만 피드백을 입력할 수 있습니다',1);const record=(table==='projects'?S.projects:S.tasks).find(x=>x.id===id);if(!record)return;const {error}=Store.demo?{error:null}:await Store.sb.from(table).update({leader_feedback:value}).eq('id',id);if(error)return toast('피드백 저장 실패: '+error.message,1);record.leader_feedback=value;Store.save();toast('팀장 피드백을 저장했습니다')}
+
+/* 협업 파트너 버튼은 개별 토글이며 복수 선택을 허용합니다. */
+document.addEventListener('click',e=>{const btn=e.target.closest('.partner-toggle-button');if(!btn)return;btn.setAttribute('aria-pressed',btn.getAttribute('aria-pressed')==='true'?'false':'true');});
 function openWorkEditor(id=null, owner=meId()){
  const existing=(S.projects||[]).find(p=>p.id===id);
  if(existing&&existing.member_id!==meId())return toast('본인이 생성한 업무만 수정할 수 있습니다',1);
@@ -1222,7 +1225,7 @@ function openWorkEditor(id=null, owner=meId()){
  <label>목표 <select id="we-goal"><option value="">목표 미지정</option>${goals.map(g=>`<option value="${esc(g.id)}" ${d.goal_id===g.id?'selected':''}>${esc(g.title||g.team_goal||'목표')}</option>`).join('')}</select></label>
  <label>업무명<input id="we-name" maxlength="100" value="${esc(d.name)}" placeholder="업무 이름을 입력하세요"></label>
  <div class="work-editor-dates"><label>시작일<input type="date" id="we-start" value="${esc(d.start_date||ISO(TODAY))}"></label><label>종료일<input type="date" id="we-end" value="${esc(d.end_date||ISO(TODAY))}"></label></div>
- <div><strong>협업 파트너</strong><p class="work-editor-help">여러 팀원을 선택할 수 있습니다. 본인은 자동 포함됩니다.</p><div class="work-partners">${partners.map(m=>`<label class="work-partner"><input type="checkbox" value="${esc(m.id)}" ${Array.isArray(d.partner_ids)&&d.partner_ids.includes(m.id)?'checked':''}><span class="partner-color" style="background:${esc(m.color||'#5b4bc4')}"></span>${esc(m.name)}</label>`).join('')}</div></div>
+ <div><strong>협업 파트너</strong><p class="work-editor-help">여러 팀원을 선택할 수 있습니다. 본인은 자동 포함됩니다.</p><div class="work-partners">${partners.map(m=>`<button type="button" class="work-partner partner-toggle-button" data-partner-id="${esc(m.id)}" aria-pressed="${Array.isArray(d.partner_ids)&&d.partner_ids.includes(m.id)?'true':'false'}"><span class="partner-color" style="background:${esc(m.color||'#5b4bc4')}"></span><span>${esc(m.name)}</span></button>`).join('')}</div></div>
  <label>파일 URL<input id="we-link" type="url" value="${esc(d.link||'')}" placeholder="https://"></label>
  <label>비고<textarea id="we-note" placeholder="업무에 대한 참고사항을 입력하세요">${esc(d.note||'')}</textarea></label>
  ${feedbackHTML(d.leader_feedback,'we-feedback',!isFeedbackLeader())}
@@ -1234,7 +1237,7 @@ function openWorkEditor(id=null, owner=meId()){
    if(!name)return toast('업무명을 입력하세요',1);
    if(!start||!end||end<start)return toast('시작일과 종료일을 확인하세요',1);
    const link=$('#we-link').value.trim();if(link&&!/^https?:\/\//i.test(link))return toast('파일 URL은 http 또는 https 주소를 입력하세요',1);
-   const row={...d,name,goal_id:$('#we-goal').value||null,start_date:start,end_date:end,partner_ids:[...$('#modal2').querySelectorAll('.work-partner input:checked')].map(el=>el.value),link,note:$('#we-note').value.trim(),leader_feedback:isFeedbackLeader()?$('#we-feedback').value:d.leader_feedback||null};
+   const row={...d,name,goal_id:$('#we-goal').value||null,start_date:start,end_date:end,partner_ids:[...$('#modal2').querySelectorAll('.work-partner[aria-pressed="true"]')].map(el=>el.dataset.partnerId),link,note:$('#we-note').value.trim(),leader_feedback:isFeedbackLeader()?$('#we-feedback').value:d.leader_feedback||null};
    const btn=$('#we-save');btn.disabled=true;
    const ok=await Store.put('projects',row);if(!ok){btn.disabled=false;return}
    if(existing)Object.assign(existing,row);else S.projects.push(row);
@@ -1581,11 +1584,11 @@ function infoHTML(d){
  <div class="task-breadcrumb" aria-label="목표 및 업무 선택">
    <div class="task-crumb"><span class="task-crumb-type">목표</span><select id="m-goal" aria-label="연결할 개인 목표 선택" title="목표 선택">${(S.goals||[]).filter(g=>g.member_id===d.member_id).map(g=>`<option value="${esc(g.id)}" ${d.goal_id===g.id?'selected':''}>${esc(String(g.title||g.team_goal||'이름 없는 목표').replace(/<[^>]*>/g,''))}</option>`).join('')}<option value="" ${!d.goal_id?'selected':''}>목표 미지정</option></select></div>
    <span class="task-crumb-arrow" aria-hidden="true">›</span>
-   <div class="task-crumb"><span class="task-crumb-type">업무</span><span class="task-crumb-dot" id="m-project-dot" style="background:${esc(color)}"></span><select id="m-project" aria-label="소속 업무 선택" title="업무 선택">${(S.projects||[]).filter(x=>x.member_id===d.member_id).map(x=>`<option value="${esc(x.id)}" ${d.project_id===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}<option value="" ${!d.project_id?'selected':''}>업무 미지정</option></select></div>
+   <div class="task-crumb"><span class="task-crumb-type">업무</span><span class="task-crumb-dot" id="m-project-dot" style="background:${esc(color)}"></span><select id="m-project" aria-label="소속 업무 선택" title="업무 선택">${(S.projects||[]).filter(x=>x.member_id===d.member_id||(x.partner_ids||[]).includes(d.member_id)||String(x.id)===String(d.project_id)).map(x=>`<option value="${esc(x.id)}" ${String(d.project_id)===String(x.id)?'selected':''}>${esc(x.name)}</option>`).join('')}<option value="" ${!d.project_id?'selected':''}>업무 미지정</option></select></div>
  </div>
  <label for="m-title">할 일 작성</label><input class="ttl" id="m-title" placeholder="할 일을 입력하세요" value="${esc(d.title||'')}">
  <div class="clean-task-dates"><label>시작일<input type="date" id="m-start-date" value="${esc(d.start_date||ISO(TODAY))}"></label><label>종료일<input type="date" id="m-due-date" value="${esc(d.due_date||ISO(TODAY))}"></label></div>
- <div class="task-partner-field"><div class="task-partner-heading"><b>협업 파트너</b><span>복수 선택 가능 · 선택한 팀원은 캘린더에 표시됩니다.</span></div><div class="task-partners" role="group" aria-label="할 일 협업 파트너 선택">${(S.members||[]).filter(m=>m.id!==d.member_id).map(m=>`<label class="task-partner-chip"><input type="checkbox" value="${esc(m.id)}" ${(Array.isArray(d.partner_ids)&&d.partner_ids.includes(m.id))?'checked':''}><span class="task-partner-dot" style="background:${esc(m.color||'#5b4bc4')}"></span><span>${esc(m.name)}</span></label>`).join('')}</div></div>
+ <div class="task-partner-field"><div class="task-partner-heading"><b>협업 파트너</b><span>복수 선택 가능 · 선택한 팀원은 캘린더에 표시됩니다.</span></div><div class="task-partners" role="group" aria-label="할 일 협업 파트너 선택">${(S.members||[]).filter(m=>m.id!==d.member_id).map(m=>`<button type="button" class="task-partner-chip partner-toggle-button" data-partner-id="${esc(m.id)}" aria-pressed="${(Array.isArray(d.partner_ids)&&d.partner_ids.includes(m.id))?'true':'false'}"><span class="task-partner-dot" style="background:${esc(m.color||'#5b4bc4')}"></span><span>${esc(m.name)}</span></button>`).join('')}</div></div>
  <label class="todo-file-link">파일 URL<input type="url" id="m-file-url" value="${esc(d.link||'')}" placeholder="https://"></label>
  <div class="simple-todo-header"><b>상세 할 일</b><span id="todo-done-count"></span><button type="button" class="btn sm secondary" id="m-todo-add">＋ 할 일 추가</button></div>
  <div id="m-todo-items">${todos.map(x=>`<div class="todo-item"><input type="checkbox" class="todo-check" aria-label="완료"><input class="todo-text" value="${esc(x.text||'')}" placeholder="상세 할 일을 입력하세요" aria-label="상세 할 일"><button class="todo-del" type="button" title="삭제">×</button></div>`).join('')}</div>
@@ -1597,11 +1600,11 @@ function logsHTML(d,logs){return `<div class="lf"><div class="r"><b style="flex:
  <div class="r"><span style="color:#888;font-size:12px">한 요일</span><div class="dys" id="l-days">${[0,1,2,3,4].map(i=>`<button data-d="${i}">${DN[i]}</button>`).join("")}</div><span class="sp"></span>진척률<input type="number" id="l-prg" min="0" max="100" value="${d.progress||0}" style="width:70px">%</div>
  <textarea id="l-content" placeholder="금주 업무내용"></textarea><input id="l-next" placeholder="차주 계획"><div class="r" style="justify-content:flex-end"><button class="btn pr sm" id="l-add">기록 추가</button></div></div>
  ${logs.map(l=>`<div class="log"><button class="x" data-dl="${l.id}">✕</button><b>${md(D(l.week))} 주</b>${[0,1,2,3,4].map(i=>`<span class="dp ${(l.days||[]).includes(i)?"on":""}">${DN[i]}</span>`).join("")}${l.progress!=null?` · ${l.progress}%`:""}<div class="ct">${esc(l.content)}</div>${l.next_plan?`<div class="np">▶ 차주: ${esc(l.next_plan)}</div>`:""}</div>`).join("")||'<div class="empty">아직 기록이 없습니다</div>'}`}
-document.addEventListener("change",e=>{if(e.target?.id!=="m-project")return;const p=(S.projects||[]).find(p=>p.id===e.target.value);const dot=$("#m-project-dot");if(dot)dot.style.background=p?.color||"#9ca3af";const el=$("#m-project-labels");if(el)el.innerHTML=projectLabelHTML(p||{})});
+document.addEventListener("change",e=>{if(e.target?.id!=="m-project")return;const p=(S.projects||[]).find(p=>p.id===e.target.value);const goalEl=$("#m-goal");if(p?.goal_id&&goalEl&&!goalEl.value&&[...goalEl.options].some(o=>o.value===p.goal_id))goalEl.value=p.goal_id;const dot=$("#m-project-dot");if(dot)dot.style.background=p?.color||"#9ca3af";const el=$("#m-project-labels");if(el)el.innerHTML=projectLabelHTML(p||{})});
 function readInfo(){
  if(!MD||!$("#m-title"))return;
  const d=MD.d; d.title=$("#m-title").value.trim();
- d.start_date=$("#m-start-date").value;d.due_date=$("#m-due-date").value;d.link=$("#m-file-url")?.value.trim()||"";d.partner_ids=[...document.querySelectorAll("#modal .task-partner-chip input:checked")].map(el=>el.value);d.goal_id=$("#m-goal")?.value||null;d.project_id=$("#m-project")?.value||null;
+ d.start_date=$("#m-start-date").value;d.due_date=$("#m-due-date").value;d.link=$("#m-file-url")?.value.trim()||"";d.partner_ids=[...document.querySelectorAll('#modal .task-partner-chip[aria-pressed="true"]')].map(el=>el.dataset.partnerId);d.goal_id=$("#m-goal")?.value||null;d.project_id=$("#m-project")?.value||null;
  d.todo=[...(MD.finishedTodo||[]),...$$("#m-todo-items .todo-item").filter(el=>!el.classList.contains('task-check-fade')).map(el=>({text:el.querySelector('.todo-text').value.trim(),done:false})).filter(t=>t.text)];
  const prog=todoProgress(d.todo);const isCompleted=$('#m-status-toggle')?.checked===true;d.status=isCompleted?'완료':'진행중';d.progress=isCompleted?100:(prog.total?prog.pct:Math.min(Number(d.progress)||0,99));
 }
@@ -1870,9 +1873,21 @@ function openGoal(id,mid){const g=id?(S.goals||[]).find(x=>x.id===id):null;if(id
 let goalSubPage=localStorage.getItem("tb-goal-page")||"view";
 function goalProgressMember(){return meId()}
 function goalWorkCollection(g){
- const mid=goalProgressMember(), projects=(S.projects||[]).filter(p=>p.goal_id===g.id&&(p.member_id===mid||(Array.isArray(p.partner_ids)&&p.partner_ids.includes(mid))));
- const tasks=(S.tasks||[]).filter(t=>t.goal_id===g.id||projects.some(p=>p.id===t.project_id));
- return {projects,tasks:tasks.filter(t=>t.member_id===mid||taskParticipants(t).some(m=>m.id===mid))};
+ // 업무 자체의 목표와 할 일의 목표 양쪽 관계를 기준으로 연결합니다.
+ // 예전 데이터에서 projects.goal_id가 비어 있어도 tasks.project_id로 정상 묶습니다.
+ const mid=goalProgressMember(), allProjects=S.projects||[], allTasks=S.tasks||[];
+ const mine=t=>t.member_id===mid||taskParticipants(t).some(m=>m.id===mid);
+ const active=allTasks.filter(mine).filter(t=>{
+   if(t.goal_id)return t.goal_id===g.id; // 할 일에서 명시적으로 선택한 목표 우선
+   const p=allProjects.find(p=>String(p.id)===String(t.project_id));
+   return !!p&&p.goal_id===g.id; // 할 일 목표 미지정 시 업무 목표 상속
+ });
+ const ids=new Set(active.map(t=>String(t.project_id||'')).filter(Boolean));
+ const projects=allProjects.filter(p=>
+   ids.has(String(p.id)) ||
+   (p.goal_id===g.id&&(p.member_id===mid||(Array.isArray(p.partner_ids)&&p.partner_ids.includes(mid))))
+ );
+ return {projects,tasks:active};
 }
 function goalPct(tasks){if(!tasks.length)return 0;return Math.round(tasks.reduce((a,t)=>a+(t.status==='완료'?100:Math.max(0,Math.min(100,Number(t.progress)||0))),0)/tasks.length)}
 function renderGoalProgress(){
