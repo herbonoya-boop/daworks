@@ -1853,7 +1853,18 @@ async function saveReadonlyTodoReview(){
   x.leader_reply=row.querySelector('.todo-leader-reply')?.value||'';
   x.leader_reviewed=row.querySelector('.todo-review-button')?.getAttribute('aria-pressed')==='true';
  });
- if(!Store.demo){const {error}=await Store.sb.from('tasks').update({todo:items}).eq('id',MD.d.id);if(error)return toast('팀장 답글 저장 실패: '+error.message,1)}
+ if(!Store.demo){
+  const {data:latest,error:loadError}=await Store.sb.from('tasks').select('todo').eq('id',MD.d.id).single();
+  if(loadError)return toast('검토 내용 불러오기 실패: '+loadError.message,1);
+  const current=Array.isArray(latest?.todo)?latest.todo:[];
+  if(current.length!==items.length||current.some((x,i)=>String(x.text||'')!==String(items[i]?.text||''))){
+   return toast('다른 사용자가 상세 할 일을 변경했습니다. 창을 닫고 다시 열어주세요.',1);
+  }
+  const updated=current.map((x,i)=>({...x,leader_reply:items[i].leader_reply,leader_reviewed:items[i].leader_reviewed}));
+  const {error}=await Store.sb.from('tasks').update({todo:updated}).eq('id',MD.d.id);
+  if(error)return toast('팀장 답글 저장 실패: '+error.message,1);
+  items.splice(0,items.length,...updated);
+ }
  MD.d.todo=items;const original=task(MD.d.id);if(original)original.todo=items;Store.save();toast('팀장 답글과 검토 상태를 저장했습니다');
 }
 function taskSafeFileUrl(value){
@@ -1913,9 +1924,19 @@ function drawModal(){
 function updateTodoCount(){const el=$("#todo-done-count");if(!el)return;const rows=$$("#m-todo-items .todo-item");el.textContent=`${rows.filter(r=>r.querySelector('.todo-check')?.checked).length} / ${rows.length} 완료`}
 function todoProgress(list){const valid=(Array.isArray(list)?list:[]).filter(x=>String(x.text||"").trim());return {total:valid.length,done:valid.filter(x=>x.done).length,pct:valid.length?Math.round(100*valid.filter(x=>x.done).length/valid.length):0}}
 function refreshTodoProgress(){if(!MD)return;const p=todoProgress(MD.d.todo),el=$("#todo-progress"),bar=$("#todo-progress-bar");if(el)el.textContent=p.total?`${p.pct}% · ${p.done}/${p.total}개 완료`:"할 일을 추가하면 자동 계산";if(bar)bar.style.width=`${p.pct}%`;if(p.total){MD.d.progress=p.pct;MD.dirty=true}}
-function todoHTML(d){const list=Array.isArray(d.todo)?d.todo:[];const prog=todoProgress(list);return `<div class="todo-panel"><div class="todo-title"><b>To do list</b><span class="todo-count">${list.filter(x=>x.done).length}/${list.length} 완료</span><button type="button" class="btn sm" id="m-todo-add" title="할 일 추가">＋ 추가</button></div><div class="todo-progress-label" id="todo-progress">${prog.total?`${prog.pct}% · ${prog.done}/${prog.total}개 완료`:"할 일을 추가하면 자동 계산"}</div><div class="todo-progress-track"><div id="todo-progress-bar" style="width:${prog.pct}%"></div></div><div id="m-todo-items">${list.map((x,i)=>`<div class="todo-item" data-ti="${i}"><input type="checkbox" aria-label="완료 여부" class="todo-check" ${x.done?"checked":""}><input class="todo-text ${x.done?"done":""}" aria-label="할 일 내용" placeholder="할 일을 입력하세요" value="${esc(x.text||"")}"><button class="todo-del" type="button" title="항목 삭제" aria-label="항목 삭제">✕</button></div>`).join("")}</div>${list.length?"":'<div class="todo-empty">＋ 추가 버튼으로 할 일을 등록하세요.</div>'}</div>`}
+function todoHTML(d){
+ const list=Array.isArray(d.todo)?d.todo:[],prog=todoProgress(list);
+ return `<div class="todo-panel"><div class="todo-title"><b>To do list</b><span class="todo-count">${prog.done}/${prog.total} 완료</span><button type="button" class="btn sm" id="m-todo-add">＋ 추가</button></div><div class="todo-progress-label" id="todo-progress">${prog.total?`${prog.pct}% · ${prog.done}/${prog.total}개 완료`:"할 일을 추가하면 자동 계산"}</div><div class="todo-progress-track"><div id="todo-progress-bar" style="width:${prog.pct}%"></div></div><div id="m-todo-items">${list.map((x,i)=>todoEditableRow(x,i)).join('')}</div></div>`;
+}
 function readTodo(){if(!MD||!$("#m-todo-items"))return;MD.d.todo=$$("#m-todo-items .todo-item").map(el=>todoRowData(el,!!el.querySelector(".todo-check")?.checked));}
-function todoRepaint(){const body=$("#m-todo-items"),list=Array.isArray(MD.d.todo)?MD.d.todo:[];if(!body)return;body.innerHTML=list.map((x,i)=>`<div class="todo-item" data-ti="${i}"><input type="checkbox" aria-label="완료 여부" class="todo-check" ${x.done?"checked":""}><input class="todo-text ${x.done?"done":""}" aria-label="할 일 내용" placeholder="할 일을 입력하세요" value="${esc(x.text||"")}"><button class="todo-del" type="button" title="항목 삭제" aria-label="항목 삭제">✕</button></div>`).join("");$(".todo-count")&&($(".todo-count").textContent=`${list.filter(x=>x.done).length}/${list.length} 완료`);$(".todo-empty")?.remove();if(!list.length)body.insertAdjacentHTML("afterend",'<div class="todo-empty">＋ 추가 버튼으로 할 일을 등록하세요.</div>');}
+function todoRepaint(){
+ const body=$("#m-todo-items"),list=Array.isArray(MD?.d?.todo)?MD.d.todo:[];
+ if(!body)return;
+ body.innerHTML=list.map((x,i)=>todoEditableRow(x,i)).join('');
+ updateTodoCount();
+ const blank=$(".todo-empty");if(blank)blank.remove();
+ if(!list.length)body.insertAdjacentHTML("afterend",'<div class="todo-empty">＋ 추가 버튼으로 할 일을 등록하세요.</div>');
+}
 function infoHTML(d){
  if(MD?.readOnly){
    const work=workFor(d),goal=(S.goals||[]).find(g=>g.id===d.goal_id),items=(Array.isArray(d.todo)?d.todo:[]),period=esc(d.start_date||'')+' ~ '+esc(d.due_date||'');
@@ -1929,7 +1950,7 @@ function infoHTML(d){
     ${feedbackHTML(d.leader_feedback,'m-feedback',!isFeedbackLeader())}${isFeedbackLeader()?'<button type="button" class="btn sm" id="m-feedback-save">피드백 저장</button>':''}
    </div>`;
  }
- const todos=(Array.isArray(d.todo)?d.todo:[]).filter(t=>!t.done);
+ const todos=Array.isArray(d.todo)?d.todo:[];
  const p=workFor(d),name=p?.name||'업무 미지정',color=p?.color||'#6553bd';
  return `<div class="simple-todo-form clean-task-form">
  <div class="task-breadcrumb" aria-label="목표 및 업무 선택">
@@ -1944,7 +1965,7 @@ function infoHTML(d){
  <label class="todo-file-link">파일 URL<input type="url" id="m-file-url" value="${esc(d.link||'')}" placeholder="https://"></label><a class="task-file-open-link" id="m-file-preview" href="${esc(taskSafeFileUrl(d.link))}" target="_blank" rel="noopener noreferrer" ${taskSafeFileUrl(d.link)?'':'hidden'}>↗ 파일 링크 열기</a>
  <div class="simple-todo-header"><b>상세 할 일</b><span id="todo-done-count"></span><button type="button" class="btn sm secondary" id="m-todo-add">＋ 할 일 추가</button></div>
  <div id="m-todo-items">${todos.map((x,i)=>todoEditableRow(x,i)).join('')}</div>
- <p class="task-check-hint">체크한 상세 할 일은 목록에서 사라지고 완료 상태로 저장됩니다.</p>
+ <p class="task-check-hint">완료한 상세 할 일은 취소선과 연한 색상으로 표시되며, 저장 후에도 목록에 남습니다.</p>
  ${feedbackHTML(d.leader_feedback,'m-feedback',!isFeedbackLeader())}${isFeedbackLeader()&&!MD.isNew?'<button type="button" class="btn sm" id="m-feedback-save">피드백 저장</button>':''}
  </div>`;
 }
