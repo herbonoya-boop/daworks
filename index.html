@@ -2380,7 +2380,63 @@ Store.put=async function(tb,rows){const r=[].concat(rows||[]).filter(Boolean);co
 Store.del=async function(tb,id){return await _sdel(tb,id);/* 삭제 기록은 서버 저장 확인 없이 남기지 않습니다. */};
 Store.update=async function(tb,id,f){return _supd(tb,id,f)};
 const ago=iso=>{const t=new Date(iso),s=(Date.now()-t)/1000;if(isNaN(s))return "";if(s<60)return "방금";if(s<3600)return Math.floor(s/60)+"분 전";if(s<86400)return Math.floor(s/3600)+"시간 전";return (t.getMonth()+1)+"/"+t.getDate()+" "+String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0")};
-function renderNoti(){const b=$("#noti-n");if(!b)return;const me=member(meId())?.name,seen=localStorage.getItem("tb-seen")||"",n=(S.acts||[]).filter(a=>String(a.at)>seen&&a.who!==me).length;b.textContent=n>99?"99+":String(n);b.classList.toggle("on",n>0);const p=$("#notp");if(p&&p.classList.contains("show"))drawNoti()}
+// 탭 제목과 파비콘의 미확인 알림 표시는 종 아이콘과 동일한 카운트를 사용합니다.
+const TAB_NOTI_TITLE="성과관리 대시보드";
+const tabFaviconLink=document.querySelector('link[rel="icon"]');
+const tabFaviconOriginal=tabFaviconLink?.href||"/icons/icon-192.png";
+let tabFaviconImage=null,tabFaviconLastCount=-1,tabFaviconRequest=0;
+function drawTabNotificationBadge(ctx,count){
+ const shown=count>99?"99+":String(count);
+ ctx.beginPath();ctx.arc(46,17,17.5,0,Math.PI*2);ctx.fillStyle="#e73548";ctx.fill();
+ ctx.lineWidth=2.4;ctx.strokeStyle="#ffffff";ctx.stroke();
+ ctx.fillStyle="#ffffff";ctx.textAlign="center";ctx.textBaseline="middle";
+ ctx.font=`800 ${shown.length>2?13:shown.length===2?15:19}px Arial,sans-serif`;
+ ctx.fillText(shown,46,18,32);
+}
+function applyTabFavicon(count){
+ if(!tabFaviconLink)return;
+ const ticket=++tabFaviconRequest;
+ if(!count){tabFaviconLink.href=tabFaviconOriginal;tabFaviconLastCount=0;return}
+ const paint=()=>{
+  if(ticket!==tabFaviconRequest)return;
+  try{
+   const cv=document.createElement("canvas");cv.width=64;cv.height=64;
+   const c=cv.getContext("2d");if(!c)return;
+   if(tabFaviconImage&&tabFaviconImage.complete&&tabFaviconImage.naturalWidth){c.drawImage(tabFaviconImage,2,5,48,48)}
+   else{c.fillStyle="#6451c8";c.beginPath();c.roundRect(2,5,48,48,12);c.fill();c.fillStyle="#ffffff";c.font="bold 28px sans-serif";c.textAlign="center";c.fillText("✓",26,38)}
+   drawTabNotificationBadge(c,count);
+   tabFaviconLink.href=cv.toDataURL("image/png");tabFaviconLastCount=count;
+  }catch(e){console.warn("탭 알림 파비콘 생성 실패",e)}
+ };
+ if(tabFaviconImage){paint();return}
+ tabFaviconImage=new Image();tabFaviconImage.onload=paint;
+ tabFaviconImage.onerror=paint;
+ tabFaviconImage.src=tabFaviconOriginal;
+}
+function updateTabNotification(count){
+ const shown=count>99?"99+":String(count);
+ document.title=count>0?`(${shown}) ${TAB_NOTI_TITLE}`:TAB_NOTI_TITLE;
+ if(tabFaviconLastCount!==count)applyTabFavicon(count);
+}
+function renderNoti(){const b=$("#noti-n");const me=member(meId())?.name,seen=localStorage.getItem("tb-seen")||"",n=(S.acts||[]).filter(a=>String(a.at)>seen&&a.who!==me).length;if(b){b.textContent=n>99?"99+":String(n);b.classList.toggle("on",n>0)}updateTabNotification(n);const p=$("#notp");if(p&&p.classList.contains("show"))drawNoti()}
+// 알림 패널을 열어 읽음 처리한 경우 다른 열린 탭의 표시도 갱신합니다.
+window.addEventListener("storage",e=>{if(e.key==="tb-seen")renderNoti()});
+// 앱이 열려 있는 동안 신규 활동을 주기적으로 확인합니다. 기존 저장 동작은 변경하지 않습니다.
+let tabNotificationPolling=false;
+async function pollTabNotifications(){
+ if(tabNotificationPolling||document.visibilityState==="hidden"||Store.demo||!Store.sb||!S.user)return;
+ tabNotificationPolling=true;
+ try{
+  const {data,error}=await Store.sb.from("activity").select("id,who,at,action,target").order("at",{ascending:false}).limit(200);
+  if(!error&&Array.isArray(data)){
+   const previous=(S.acts||[]).map(x=>x.id).join("|");
+   const next=data.map(x=>x.id).join("|");
+   if(previous!==next){S.acts=data;renderNoti()}
+  }
+ }catch(e){console.debug("알림 갱신 건너뜀",e)}finally{tabNotificationPolling=false}
+}
+window.setInterval(pollTabNotifications,45000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollTabNotifications()});
 function drawNoti(){const p=$("#notp"),seen=p.dataset.seen||"",me=member(meId())?.name;p.innerHTML=`<h4>🔔 수정·로그인 기록<button id="noti-x">닫기</button></h4>`+((S.acts||[]).slice(0,60).map(a=>{const m=S.members.find(x=>x.name===a.who);return `<div class="na ${String(a.at)>seen&&a.who!==me?"new":""}">${m?av(m,26):""}<div><b>${esc(a.who||"-")}</b> · ${esc(a.action)}${a.target?` <span style="color:#555">“${esc(a.target)}”</span>`:""}<small>${ago(a.at)}</small></div></div>`}).join("")||'<div class="empty">기록이 없습니다</div>');const x=$("#noti-x");if(x)x.onclick=()=>p.classList.remove("show")}
 function toggleNoti(e){if(e&&e.stopPropagation)e.stopPropagation();const p=$("#notp");if(p.classList.contains("show")){p.classList.remove("show");return}p.dataset.seen=localStorage.getItem("tb-seen")||"";p.classList.add("show");drawNoti();localStorage.setItem("tb-seen",new Date().toISOString());renderNoti()}
 document.addEventListener("pointerdown",e=>{const p=$("#notp");if(p&&p.classList.contains("show")&&!e.target.closest("#notp,#b-noti"))p.classList.remove("show")},true);
