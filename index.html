@@ -1594,8 +1594,8 @@ async function saveLeaderFeedback(table,id,value){if(!isFeedbackLeader())return 
 document.addEventListener('click',e=>{const btn=e.target.closest('.partner-toggle-button');if(!btn)return;btn.setAttribute('aria-pressed',btn.getAttribute('aria-pressed')==='true'?'false':'true');});
 function openWorkEditor(id=null, owner=meId()){
  const existing=(S.projects||[]).find(p=>p.id===id);
- if(existing&&existing.member_id!==meId())return toast('본인이 생성한 업무만 수정할 수 있습니다',1);
- if(!existing&&owner!==meId())return toast('본인 업무만 만들 수 있습니다',1);
+ if(existing&&existing.member_id!==meId()&&!isFeedbackLeader())return toast('본인이 생성한 업무만 수정할 수 있습니다',1);
+ if(!existing&&owner!==meId()&&!isFeedbackLeader())return toast('본인 업무만 만들 수 있습니다',1);
  const d=existing||{id:uid(),member_id:owner,name:'',goal_id:null,start_date:ISO(TODAY),end_date:ISO(TODAY),partner_ids:[],link:'',note:'',sort:projectList(owner).length,color:member(owner)?.color||'#5b4bc4',visibility:'public',labels:[]};
  const goals=(S.goals||[]).filter(g=>g.member_id===owner);
  const partners=allM().filter(m=>m.id!==owner);
@@ -2316,7 +2316,7 @@ function bind(){const closeMobile=()=>{$("#bodyg").classList.remove("mobile-nav-
   if(mod&&k==="c"&&S.sel){e.preventDefault();copyTask(S.sel)}else if(mod&&k==="v"&&S.clip){e.preventDefault();pasteTask(S.hover)}
   else if(mod&&k==="d"&&S.sel){e.preventDefault();dupTask(S.sel)}else if(mod&&k==="z"){e.preventDefault();undo()}
   else if((k==="delete"||k==="backspace")&&S.sel)removeTask(S.sel);else if(!mod&&k==="n")openNew();else if(!mod&&k==="t"){S.cursor=S.agDay=TODAY;S.miniM=null;render()}})}
-const isLeader=()=>member(meId())?.role==="leader";
+const isLeader=()=>{const m=member(meId());return !!m&&(m.role==="leader"||(m.name==="최영무"&&m.pos==="팀장"));};
 const canEdit=(...ids)=>isLeader()||ids.every(i=>i===meId());
 const deny=()=>toast("본인 업무만 수정할 수 있습니다 (팀장은 전체 수정 가능)",1);
 const guard=(fn,get)=>function(...a){const ids=[].concat(get(...a)).filter(x=>x!==undefined&&x!==null);if(ids.length&&!canEdit(...ids)){deny();return}return fn.apply(this,a)};
