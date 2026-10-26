@@ -1449,7 +1449,29 @@ body.budget-mode #budget-panel:not([hidden]){display:block!important}
 body.budget-mode #bodyg{display:none!important}
 body:not(.budget-mode) #budget-panel{display:none!important}
 </style>
-</head><body>
+<style id="definitive-fixed-menu">
+.app{grid-template-rows:auto minmax(0,1fr)!important}
+.top{display:flex!important;flex-wrap:nowrap!important;min-height:60px!important;height:auto!important;gap:9px!important;padding:8px 14px!important}
+.top .mode-switch-dock{order:0!important;display:grid!important;grid-template-columns:306px 344px!important;align-items:center!important;gap:14px!important;flex:0 0 664px!important;width:664px!important;min-width:664px!important;max-width:664px!important;justify-content:start!important;background:transparent!important}
+.top #seg-tab.mode-main-buttons{display:grid!important;grid-template-columns:repeat(3,96px)!important;gap:9px!important;width:306px!important;min-width:306px!important;max-width:306px!important;justify-content:start!important}
+.top #seg-tab.mode-main-buttons button{width:96px!important;min-width:96px!important;max-width:96px!important;padding:0!important}
+.top .mode-submenu{width:344px!important;min-width:344px!important;max-width:344px!important;display:flex!important;align-items:center!important;overflow:visible!important;justify-content:flex-start!important;flex:none!important;background:transparent!important;position:static!important}
+.top .mode-submenu>div{width:344px!important;min-width:344px!important;max-width:344px!important;gap:5px!important;justify-content:flex-start!important;position:static!important;flex:none!important;visibility:visible!important;opacity:1!important;transform:none!important;pointer-events:auto!important}
+.top .mode-submenu>#seg-zoom{display:none!important}
+body:not(.goal-mode):not(.budget-mode) .top .mode-submenu>#seg-zoom{display:flex!important}
+body.goal-mode .top .mode-submenu>#goal-subnav{display:flex!important}
+body.budget-mode .top .mode-submenu>#budget-subnav{display:flex!important}
+.top .mode-submenu button{flex:0 0 auto!important}
+body.budget-mode .top{background:linear-gradient(110deg,#101d37,#1a3765 60%,#315a90)!important}
+#budget-panel{grid-row:2!important;grid-column:1!important;position:relative!important;width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important}
+#budget-embed{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;border:0!important}
+#bodyg{grid-row:2!important;grid-column:1!important;min-height:0!important}
+body.budget-mode #bodyg{display:none!important}
+body.budget-mode #budget-panel{display:block!important}
+body:not(.budget-mode) #budget-panel{display:none!important}
+@media(max-width:1330px){.top{flex-wrap:wrap!important}.top .mode-switch-dock{order:8!important;flex:1 1 100%!important;max-width:100%!important;width:100%!important;min-width:0!important;grid-template-columns:306px minmax(0,344px)!important;justify-content:start!important}.top .mode-submenu{min-width:0!important;max-width:344px!important;width:100%!important}.top .mode-submenu>div{min-width:0!important;max-width:344px!important;width:100%!important;overflow-x:auto!important}}
+@media(max-width:700px){.top .mode-switch-dock{grid-template-columns:306px!important;row-gap:8px!important}.top .mode-submenu{grid-row:2!important;grid-column:1!important}}
+</style></head><body>
 <div class="app">
 <header class="top"><button class="ic" id="b-nav" title="메뉴 접기/펼치기">☰</button><div class="brand">성과관리 대시보드</div>
 <button class="btn" id="b-today">Today</button><button class="ic" id="b-prev">‹</button><button class="ic" id="b-next">›</button><div class="rng" id="rng"></div><span class="wkb" id="wkb"></span><div class="sp"></div>
@@ -2991,25 +3013,43 @@ const oldRender=render;render=function(){oldRender();if(page===&#x27;export&#x27
 <script id="dashboard-three-pill-logic">
 (function(){
  const nav=document.getElementById('seg-tab'),panel=document.getElementById('budget-panel'),frame=document.getElementById('budget-embed');
+ const template=document.getElementById('embedded-budget-source');
  if(!nav||!panel||!frame)return;
- const embedded=document.getElementById('embedded-budget-source');
- if(embedded && embedded.textContent.trim()) frame.srcdoc=embedded.textContent;
- else panel.innerHTML='<div style="padding:32px;color:#b33">예산관리 화면 코드를 찾지 못했습니다.</div>';
- let budgetPage='annual';
- const apply=(v)=>{
-  const budget=v==='budget';document.body.classList.toggle('budget-mode',budget);
-  panel.hidden=!budget;
-  document.querySelectorAll('#seg-tab button[data-v]').forEach(b=>{const on=b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1});
-  document.querySelectorAll('#budget-subnav button').forEach(b=>b.classList.toggle('on',b.dataset.bpage===budgetPage));
-  if(budget){try{frame.contentWindow.postMessage({type:'dashboard-budget-page',page:budgetPage},'*')}catch(e){}}
- };
- nav.addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;
-  if(b.dataset.v==='budget'){e.stopImmediatePropagation();localStorage.setItem('tb-mode','budget');apply('budget')}
-  else{document.body.classList.remove('budget-mode');panel.hidden=true;setTimeout(()=>apply(b.dataset.v),0)}
+ let budgetPage='annual',frameLoaded=false;
+ if(template&&template.textContent.trim()){
+   frame.srcdoc=template.textContent;
+ } else {
+   frame.srcdoc='<html lang="ko"><body><h2>예산 화면을 불러올 수 없습니다.</h2></body></html>';
+ }
+ function showBudgetPage(){if(frameLoaded&&frame.contentWindow)frame.contentWindow.postMessage({type:'dashboard-budget-page',page:budgetPage},'*')}
+ function select(mode){
+   const budget=mode==='budget';
+   document.body.classList.toggle('budget-mode',budget);
+   document.body.classList.toggle('goal-mode',mode==='goal');
+   panel.hidden=!budget;
+   document.querySelectorAll('#seg-tab button[data-v]').forEach(b=>{const on=b.dataset.v===mode;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});
+   document.querySelectorAll('#budget-subnav button').forEach(b=>b.classList.toggle('on',b.dataset.bpage===budgetPage));
+   if(budget)showBudgetPage();
+ }
+ // Capture first: original dashboard only knows 'cal' and 'goal'.
+ nav.addEventListener('click',function(e){
+   const b=e.target.closest('button[data-v]');if(!b)return;
+   e.stopImmediatePropagation();e.preventDefault();
+   const mode=b.dataset.v;
+   localStorage.setItem('tb-mode',mode);
+   if(mode!=='budget'&&typeof S!=='undefined'){
+     S.mode=mode;
+     if(typeof render==='function')render();
+   }
+   select(mode);
  },true);
- document.getElementById('budget-subnav').addEventListener('click',e=>{const b=e.target.closest('button[data-bpage]');if(!b)return;budgetPage=b.dataset.bpage;apply('budget')});
- frame.addEventListener('load',()=>{if(document.body.classList.contains('budget-mode'))apply('budget')});
- if(localStorage.getItem('tb-mode')==='budget')apply('budget');
+ document.getElementById('budget-subnav').addEventListener('click',e=>{
+   const b=e.target.closest('button[data-bpage]');if(!b)return;
+   budgetPage=b.dataset.bpage;select('budget');
+ });
+ frame.addEventListener('load',()=>{frameLoaded=true;if(document.body.classList.contains('budget-mode'))showBudgetPage()});
+ const initial=localStorage.getItem('tb-mode');
+ select(initial==='goal'?'goal':initial==='budget'?'budget':'cal');
 })();
 </script>
 </body></html>
