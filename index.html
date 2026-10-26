@@ -1418,12 +1418,53 @@ body.budget-mode #budget-panel{display:block;min-height:0;flex:1}
 @media(max-width:1350px){.top>.sp{flex:1 1 80px!important}.top .mode-switch-dock{order:8!important;flex:1 1 100%!important;width:100%!important;justify-content:flex-end!important}.top .mode-switch-dock .goal-subnav,.top .mode-switch-dock .budget-subnav{max-width:calc(100vw - 370px)!important;overflow-x:auto!important}}
 @media(max-width:760px){.top .mode-switch-dock{flex-wrap:wrap!important;justify-content:flex-start!important}.top .mode-switch-dock .goal-subnav,.top .mode-switch-dock .budget-subnav{flex-basis:100%!important;max-width:100%!important;overflow-x:auto!important}.top .mode-switch-dock #seg-tab.mode-switch button{min-width:0!important;padding:0 13px!important}.top .mode-switch-dock #seg-tab.mode-switch{width:100%!important;justify-content:space-between!important}}
 </style>
+<style id="single-menu-clean-override">
+/* Only the pill buttons and the active group's subordinate buttons are visible. */
+.top .mode-switch-dock{display:flex!important;align-items:center!important;gap:14px!important;flex:0 1 auto!important;min-width:0!important;max-width:100%!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.top #seg-tab.mode-main-buttons{display:flex!important;align-items:center!important;gap:7px!important;background:transparent!important;border:0!important;padding:0!important;margin:0!important;min-width:max-content!important;box-shadow:none!important;position:static!important;isolation:auto!important}
+.top #seg-tab.mode-main-buttons::before,.top #seg-tab.mode-main-buttons::after{display:none!important;content:none!important}
+.top #seg-tab.mode-main-buttons button{position:static!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:88px!important;width:auto!important;height:35px!important;min-height:35px!important;margin:0!important;padding:0 16px!important;border-radius:99px!important;border:1px solid #b1c5f6!important;background:#c9d8ff!important;box-shadow:none!important;color:#1b3a78!important;-webkit-text-fill-color:#1b3a78!important;font:700 12px 'Noto Sans KR',sans-serif!important;white-space:nowrap!important}
+.top #seg-tab.mode-main-buttons button.on{background:linear-gradient(150deg,#4d88ff,#2859d9)!important;border-color:#2252bd!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 3px 10px #071a5850!important}
+.top .mode-submenu{display:flex!important;align-items:center!important;gap:0!important;background:transparent!important;border:0!important;min-width:0!important;max-width:100%!important;padding:0!important;box-shadow:none!important;flex:0 1 auto!important}
+.top .mode-submenu>*{position:static!important;display:none!important;align-items:center!important;gap:5px!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;max-width:100%!important;min-width:0!important;width:auto!important;height:auto!important;transform:none!important;opacity:1!important;visibility:visible!important;overflow:visible!important;flex:0 1 auto!important;pointer-events:auto!important}
+body:not(.goal-mode):not(.budget-mode) .top .mode-submenu>#seg-zoom{display:flex!important}
+body.goal-mode .top .mode-submenu>#goal-subnav{display:flex!important}
+body.budget-mode .top .mode-submenu>#budget-subnav{display:flex!important}
+.top .mode-submenu>#seg-zoom::before{display:none!important}
+.top .mode-submenu>#seg-zoom button,.top .mode-submenu .goal-subnav button,.top .mode-submenu .budget-subnav button{position:static!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;min-width:0!important;width:auto!important;height:33px!important;min-height:33px!important;padding:0 11px!important;border-radius:9px!important;border:1px solid #ffffff7a!important;background:#ffffff1a!important;box-shadow:none!important;color:white!important;-webkit-text-fill-color:white!important;font:700 12px 'Noto Sans KR',sans-serif!important}
+.top .mode-submenu button.on{background:white!important;border-color:white!important;color:#253f78!important;-webkit-text-fill-color:#253f78!important}
+.top .mode-submenu>#seg-zoom button.on{background:white!important;color:#253f78!important;-webkit-text-fill-color:#253f78!important}
+/* Header buttons stay on a single line whenever space permits; wrap naturally instead of overlapping. */
+.top{column-gap:8px!important}
+@media(max-width:1450px){.top .mode-switch-dock{order:8!important;flex:1 1 100%!important;width:100%!important;justify-content:flex-end!important}.top .mode-submenu{overflow-x:auto!important}}
+@media(max-width:700px){.top .mode-switch-dock{flex-wrap:wrap!important;justify-content:flex-start!important}.top .mode-submenu{flex:1 1 100%!important;overflow-x:auto!important}.top #seg-tab.mode-main-buttons{min-width:0!important}.top #seg-tab.mode-main-buttons button{min-width:0!important;padding:0 13px!important}}
+</style>
+<style id="budget-visible-panel-repair">
+/* The dashboard is a two-row CSS grid. Its budget panel must occupy row 2. */
+.app{grid-template-rows:auto minmax(0,1fr)!important}
+#budget-panel{grid-column:1;grid-row:2;position:relative;min-width:0;min-height:0;height:100%;width:100%;overflow:hidden;background:#f5f7fb}
+body.budget-mode #budget-panel:not([hidden]){display:block!important}
+#budget-embed{display:block;position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;border:0;background:white}
+#bodyg{grid-column:1;grid-row:2;min-height:0}
+body.budget-mode #bodyg{display:none!important}
+body:not(.budget-mode) #budget-panel{display:none!important}
+</style>
 </head><body>
 <div class="app">
 <header class="top"><button class="ic" id="b-nav" title="메뉴 접기/펼치기">☰</button><div class="brand">성과관리 대시보드</div>
 <button class="btn" id="b-today">Today</button><button class="ic" id="b-prev">‹</button><button class="ic" id="b-next">›</button><div class="rng" id="rng"></div><span class="wkb" id="wkb"></span><div class="sp"></div>
-<div class="mode-switch-dock"><div class="seg tabs mode-switch" id="seg-tab" role="tablist" aria-label="업무관리 목표관리 예산관리 전환"><button type="button" role="tab" data-v="cal"><span class="mode-label"><span aria-hidden="true">📅</span><span>업무관리</span></span></button><button type="button" role="tab" data-v="goal"><span class="mode-label"><span aria-hidden="true">🎯</span><span>목표관리</span></span></button><button type="button" role="tab" data-v="budget"><span class="mode-label"><span>예산관리</span></span></button></div><div class="goal-subnav" id="goal-subnav" role="tablist" aria-label="목표관리 메뉴"><button type="button" data-gpage="view">목표보기</button><button type="button" data-gpage="progress">진척도 관리</button><button type="button" data-gpage="kpi">KPI 관리</button></div><div class="budget-subnav" id="budget-subnav" role="tablist" aria-label="예산관리 메뉴"><button type="button" data-bpage="annual">연간 예산작성</button><button type="button" data-bpage="quarterly">분기 예산작성</button><button type="button" data-bpage="overview">전체예산관리</button><button type="button" data-bpage="export">출력</button></div></div>
-<div class="seg zoom-slider" id="seg-zoom" role="group" aria-label="캘린더 표시 기간"><button data-v="week">1주</button><button data-v="2w">2주</button><button data-v="3w">3주</button><button data-v="month">월</button></div>
+<div class="mode-switch-dock">
+  <div class="mode-main-buttons" id="seg-tab" role="tablist" aria-label="관리 메뉴 선택">
+    <button type="button" role="tab" data-v="cal">업무관리</button>
+    <button type="button" role="tab" data-v="goal">목표관리</button>
+    <button type="button" role="tab" data-v="budget">예산관리</button>
+  </div>
+  <div class="mode-submenu" aria-label="선택된 관리 메뉴의 하위 메뉴">
+    <div class="seg zoom-slider cal-subnav" id="seg-zoom" role="group" aria-label="업무관리 주간 선택"><button data-v="week">1주</button><button data-v="2w">2주</button><button data-v="3w">3주</button><button data-v="month">4주</button></div>
+    <div class="goal-subnav" id="goal-subnav" role="tablist" aria-label="목표관리 메뉴"><button type="button" data-gpage="view">목표보기</button><button type="button" data-gpage="progress">진척도 관리</button><button type="button" data-gpage="kpi">KPI 관리</button></div>
+    <div class="budget-subnav" id="budget-subnav" role="tablist" aria-label="예산관리 메뉴"><button type="button" data-bpage="annual">예산작성</button><button type="button" data-bpage="overview">예산관리</button></div>
+  </div>
+</div>
 <button class="ic" id="b-mobile-preview" type="button" title="모바일 화면으로 보기" aria-label="모바일 화면으로 보기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg></button><button class="ic mobile-side-btn" id="b-side-mobile" title="일정 및 알림 패널" aria-label="일정 및 알림 패널">☷</button><button class="ic bell" id="b-noti" title="수정 알림">🔔<i class="bdg" id="noti-n"></i></button><div class="notp" id="notp"></div>
 <button class="prof" id="b-prof" title="내 프로필"></button><input type="file" id="f-import" accept=".csv" hidden></header><section id="budget-panel" aria-label="예산관리 화면" hidden><iframe id="budget-embed" title="예산관리 작성 화면" loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"></iframe></section> <div class="body" id="bodyg"><div class="mobile-shade" id="mobile-shade"></div><nav class="nav" id="nav"><div class="mini" id="mini"></div><div id="navl"></div><div class="nav-q"><input class="search" id="q" placeholder="🔍 업무 검색"></div></nav><div id="nav-resizer" role="separator" tabindex="0" aria-label="사이드바 너비 조절" aria-orientation="vertical" title="드래그하여 사이드바 너비 조절 · 방향키로 10px씩 조절"></div><main class="main" id="main"><div style="margin:40px auto;max-width:560px;padding:20px 24px;border:1px solid #f0c36d;background:#fff8e1;border-radius:12px;line-height:1.8"><b>⏳ 화면을 불러오는 중…</b><br>이 문구가 계속 보이면 스크립트가 실행되지 않은 것입니다.<br>① 메모장 맨 아래가 <b>END</b> 줄인지 확인 (코드 전체 복사)<br>② 바탕화면에 저장한 파일을 <b>Chrome 또는 Edge</b>로 열기<br>&nbsp;&nbsp;&nbsp;(OneDrive·Teams·메일 미리보기에서 열면 스크립트가 차단됩니다)<br>③ 다른 이름으로 저장 시 인코딩 <b>UTF-8</b></div></main><aside class="side"><div class="acc" id="acc"></div><div class="box" id="wkst"></div><div class="box" id="absbox"></div></aside></div></div>
 <div id="phone-preview" class="phone-preview" role="dialog" aria-modal="true" aria-label="모바일 화면 미리보기" hidden>
@@ -2951,7 +2992,9 @@ const oldRender=render;render=function(){oldRender();if(page===&#x27;export&#x27
 (function(){
  const nav=document.getElementById('seg-tab'),panel=document.getElementById('budget-panel'),frame=document.getElementById('budget-embed');
  if(!nav||!panel||!frame)return;
- frame.srcdoc=document.getElementById('embedded-budget-source').textContent;
+ const embedded=document.getElementById('embedded-budget-source');
+ if(embedded && embedded.textContent.trim()) frame.srcdoc=embedded.textContent;
+ else panel.innerHTML='<div style="padding:32px;color:#b33">예산관리 화면 코드를 찾지 못했습니다.</div>';
  let budgetPage='annual';
  const apply=(v)=>{
   const budget=v==='budget';document.body.classList.toggle('budget-mode',budget);
