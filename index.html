@@ -680,6 +680,10 @@ border-color:color-mix(in srgb,var(--tc) 60%,white)!important;color:var(--safe-i
 /* Compact task editor: reference-inspired light-gray form */
 .minimal-task-header{background:#fff!important;color:#37353e!important;border-bottom:0!important;padding:18px 22px 2px!important}
 .minimal-task-header .r1>b{font-size:17px;font-weight:650}
+#modal .task-leader-finish{flex:none;border:1px solid #806ac5;background:#f0ebff;color:#593bb4;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+#modal .task-leader-finish:hover{background:#e7defd}
+#modal .task-leader-finish:disabled{opacity:.6;cursor:wait}
+@media(max-width:520px){#modal .task-leader-finish{padding:6px 8px;font-size:11px}}
 .clean-task-form{gap:11px!important}
 .clean-task-form>label{font-size:11px!important;font-weight:600!important;color:#77747f!important}
 .clean-task-form .ttl{background:#f6f6f8!important;border:1px solid transparent!important;border-radius:12px!important;font-size:14px!important;font-weight:450!important;padding:13px 14px!important;min-height:47px!important}
@@ -2017,6 +2021,8 @@ async function saveSingleTodoLeaderField(idx,field,button){
  const row=button.closest('.task-readonly-checkitem, .todo-item');
  const value=field==='leader_reply'?(row?.querySelector('.todo-leader-reply')?.value??''):!original.leader_reviewed;
  const before=button.textContent;button.disabled=true;button.textContent='저장 중…';
+ MD.leaderSaving=(MD.leaderSaving||0)+1;
+ const finishBtn=document.getElementById('m-leader-finish');if(finishBtn)finishBtn.disabled=true;
  try{
   let next;
   if(Store.demo){next=(MD.d.todo||[]).map(x=>({...x}));next[idx]={...next[idx],[field]:value}}
@@ -2041,7 +2047,7 @@ async function saveSingleTodoLeaderField(idx,field,button){
   } else {button.textContent='피드백 저장';}
   toast(field==='leader_reply'?'해당 상세 할 일의 피드백을 저장했습니다':'해당 상세 할 일의 검토 상태를 저장했습니다');
  }catch(err){toast(err.message||String(err),1);button.textContent=before}
- finally{if(button.isConnected){button.disabled=false;if(button.textContent==='저장 중…')button.textContent=before}}
+ finally{if(MD&&MD.d.id===id){MD.leaderSaving=Math.max(0,(MD.leaderSaving||1)-1);const finishBtn=document.getElementById('m-leader-finish');if(finishBtn)finishBtn.disabled=!!MD.leaderSaving;}if(button.isConnected){button.disabled=false;if(button.textContent==='저장 중…')button.textContent=before}}
 }
 function bindPerTodoLeaderActions(){
  const modal=document.querySelector('#modal');if(!modal||!isFeedbackLeader())return;
@@ -2051,6 +2057,22 @@ function bindPerTodoLeaderActions(){
   const review=e.target.closest('[data-item-review]');
   if(review){e.preventDefault();e.stopPropagation();saveSingleTodoLeaderField(Number(review.dataset.itemReview),'leader_reviewed',review)}
  });
+}
+function finishTaskLeaderFeedback(){
+ if(!MD||MD.isNew||!isFeedbackLeader())return;
+ if(MD.leaderSaving||document.querySelector('#modal .todo-leader-save:disabled, #modal .todo-review-inline:disabled'))return toast('피드백 또는 검토 저장이 끝난 뒤 완료해 주세요',1);
+ const items=Array.isArray(MD.d.todo)?MD.d.todo:[];
+ const unsaved=[...document.querySelectorAll('#modal [data-todo-detail]')].some(el=>{
+  const idx=Number(el.dataset.todoDetail),input=el.querySelector('.todo-leader-reply');
+  return input&&input.value!==String(items[idx]?.leader_reply||'');
+ });
+ const main=document.getElementById('m-feedback');
+ const mainUnsaved=main&&!main.readOnly&&main.value!==String(MD.d.leader_feedback||'');
+ if((unsaved||mainUnsaved)&&!confirm('저장하지 않은 팀장 피드백이 있습니다. 저장하지 않고 팝업을 닫을까요?'))return;
+ // Read-only task popups can mark MD.dirty on typing even after a successful independent save.
+ // Only clear this flag if no actual unsaved feedback remains in the read-only view.
+ if(MD.readOnly)MD.dirty=false;
+ closeModal();
 }
 function taskSafeFileUrl(value){
  const raw=String(value||'').trim();
@@ -2067,10 +2089,11 @@ function refreshTaskFilePreview(){
 }
 function drawModal(){
  const d=MD.d; MD.finishedTodo=[];
- $("#modal").innerHTML=`<div class="mh minimal-task-header"><div class="r1"><b>${MD.isNew?'할 일 작성':MD.readOnly?esc(d.title||'할 일'):'할 일 수정'}</b><span class="task-header-owner" title="담당자 ${esc(member(d.member_id)?.name||'미지정')}"><span class="task-header-owner-avatar" style="--owner-bg:${esc(member(d.member_id)?.color||'#5b4bc4')};--owner-fg:#ffffff">${esc(String(member(d.member_id)?.name||'?').slice(-2))}</span></span><div class="sp"></div>${MD.isNew||MD.readOnly?'':`<button type="button" class="ic" id="m-del" title="할 일 삭제">🗑</button>`}<button type="button" class="ic" id="m-close" aria-label="닫기">✕</button></div></div>
+ $("#modal").innerHTML=`<div class="mh minimal-task-header"><div class="r1"><b>${MD.isNew?'할 일 작성':MD.readOnly?esc(d.title||'할 일'):'할 일 수정'}</b><span class="task-header-owner" title="담당자 ${esc(member(d.member_id)?.name||'미지정')}"><span class="task-header-owner-avatar" style="--owner-bg:${esc(member(d.member_id)?.color||'#5b4bc4')};--owner-fg:#ffffff">${esc(String(member(d.member_id)?.name||'?').slice(-2))}</span></span><div class="sp"></div>${MD.isNew||MD.readOnly?'':`<button type="button" class="ic" id="m-del" title="할 일 삭제">🗑</button>`}${!MD.isNew&&isFeedbackLeader()?'<button type="button" class="task-leader-finish" id="m-leader-finish" title="저장된 팀장 피드백·검토 내용을 확인하고 닫기">팀장피드백 완료</button>':''}<button type="button" class="ic" id="m-close" aria-label="닫기">✕</button></div></div>
  <div class="mb ${MD.readOnly?'readonly-task-body':''}">${infoHTML(d)}</div><div class="mf task-modal-footer">${MD.readOnly?`<span class="task-readonly-status">${d.status==='완료'?'✓ 완료':'● 진행중'}</span>`:`<label class="task-status-toggle" for="m-status-toggle"><input id="m-status-toggle" type="checkbox" ${d.status==='완료'?'checked':''} role="switch" aria-label="할 일 완료 상태"><span class="task-switch-track"><span class="task-switch-thumb"></span></span><span class="task-switch-label" id="m-status-label">${d.status==='완료'?'완료':'진행중'}</span></label>`}<div class="task-footer-actions">${MD.isNew?'':`<button type="button" class="btn secondary" id="m-copy" title="할 일을 복사하고 캘린더에서 Ctrl+V로 붙여넣기">⧉ 복사하기</button>`}<button class="btn secondary" id="m-cancel">취소</button>${MD.readOnly?'':`<button class="btn pr" id="m-save">${MD.isNew?'할 일 추가':'저장'}</button>`}</div></div>`;
  $("#m-close").onclick=$("#m-cancel").onclick=closeModal;
  if($("#m-save"))$("#m-save").onclick=saveModal;
+ $("#m-leader-finish")?.addEventListener("click",finishTaskLeaderFeedback);
  $("#m-copy")?.addEventListener("click",()=>{if(!MD||MD.isNew)return;copyTask(MD.d.id)});
  if(MD.readOnly){$("#m-status-toggle")?.setAttribute("disabled","")}
  $("#m-task-type")?.addEventListener("change",switchMeetingLayout);switchMeetingLayout();
